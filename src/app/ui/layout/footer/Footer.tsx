@@ -1,5 +1,5 @@
 'use client';
-import LogoQuikFixs from '@/app/components/svg/LogoQuikFixs';
+import LogoRideNow from '@/app/components/svg/LogoRideNow';
 
 import ButtonsStores from './ButtonsStores';
 import FollowUs from './FollowUs';
@@ -12,7 +12,7 @@ export default function Footer() {
         <div className="flex flex-col items-start justify-between gap-6 py-7 md:flex-row md:gap-0 md:py-12">
           <div className="flex flex-col-reverse gap-8 md:flex-col md:gap-4">
             <div>
-              <LogoQuikFixs size={48} />
+              <LogoRideNow size={48} />
             </div>
             <FollowUs />
           </div>
