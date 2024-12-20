@@ -1,50 +1,84 @@
-'use client';
-import React, { useState } from 'react';
+'use client'
+
+import React, { useRef, useEffect, useState } from 'react';
+import * as faceapi from 'face-api.js';
+import './face.css';
 
 export default function FacePage() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [detections, setDetections] = useState(null);
+  
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [image, setImage] = useState<string | null>(null);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      setSelectedFile(event.target.files[0]);
+  useEffect(() => {
+    startVideo();
+    loadModels();
+  }, []);
+
+  const startVideo = () => {
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      })
+      .catch(err => console.error('error:', err));
+  };
+
+  const loadModels = async () => {
+    await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+    await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
+    await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
+    await faceapi.nets.ssdMobilenetv1.loadFromUri('/models'); // Load SsdMobilenetv1 model
+  };
+
+  const handleCapture = async () => {
+    if (videoRef.current && canvasRef.current) {
+      const displaySize = { width: videoRef.current.videoWidth, height: videoRef.current.videoHeight };
+      canvasRef.current.width = displaySize.width;
+      canvasRef.current.height = displaySize.height;
+
+      const context = canvasRef.current.getContext('2d');
+      if (context) {
+        context.drawImage(videoRef.current, 0, 0, displaySize.width, displaySize.height);
+        const dataUrl = canvasRef.current.toDataURL('image/jpeg');
+        setImage(dataUrl);
+
+        // Detect faces in the captured image
+        const detections = await faceapi.detectAllFaces(canvasRef.current, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptors();
+        console.log('detections', detections);
+      }
     }
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!selectedFile) return;
+  const compareFaces = async () => {
+    if (image) {
+      const img1 = await faceapi.fetchImage(image);
+      const img2 = await faceapi.fetchImage('/images/yo.jpg');
 
-    const formData = new FormData();
-    formData.append('image', selectedFile);
+      const detections1 = await faceapi.detectSingleFace(img1).withFaceLandmarks().withFaceDescriptor();
+      const detections2 = await faceapi.detectSingleFace(img2).withFaceLandmarks().withFaceDescriptor();
 
-    try {
-      const response = await fetch('/api/face', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const result = await response.json();
-      setDetections(result.detections);
-    } catch (error) {
-      console.error('Error detecting faces:', error);
+      if (detections1 && detections2) {
+        const distance = faceapi.euclideanDistance(detections1.descriptor, detections2.descriptor);
+        if (distance < 0.6) {
+          alert('Faces match!');
+        } else {
+          alert('Faces do not match.');
+        }
+      } else {
+        alert('Could not detect faces in one or both images.');
+      }
     }
   };
 
   return (
-    <div className="flex w-full flex-col items-center justify-center">
-      <h1 className="text-4xl font-bold">Face Detection Page</h1>
-      <p className="mt-4 text-lg">This is a test page for face detection.</p>
-      <form onSubmit={handleSubmit} className="mt-4">
-        <input type="file" accept="image/*" onChange={handleFileChange} />
-        <button type="submit" className="mt-2 p-2 bg-blue-500 text-white rounded">Upload and Detect</button>
-      </form>
-      {detections && (
-        <div className="mt-4">
-          <h2 className="text-2xl font-bold">Detections:</h2>
-          <pre>{JSON.stringify(detections, null, 2)}</pre>
-        </div>
-      )}
+    <div>
+      <video ref={videoRef} autoPlay muted width="720" height="560" />
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
+      <button onClick={handleCapture}>Capture Image</button>
+      <button onClick={compareFaces}>Compare Faces</button>
+      {image && <img src={image} alt="Captured" />}
     </div>
   );
 }
