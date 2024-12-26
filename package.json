@@ -10,7 +10,9 @@
     "pages:build": "npx @cloudflare/next-on-pages"
   },
   "dependencies": {
+    "@tensorflow/tfjs-node": "^4.22.0",
     "axios": "^1.7.7",
+    "canvas": "^3.0.0",
     "cookie": "^1.0.1",
     "face-api.js": "^0.22.2",
     "firebase": "^10.13.2",
