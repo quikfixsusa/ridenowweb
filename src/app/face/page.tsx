@@ -1,11 +1,10 @@
-'use client'
+'use client';
 
-import React, { useRef, useEffect, useState } from 'react';
 import * as faceapi from 'face-api.js';
+import React, { useRef, useEffect, useState } from 'react';
 import './face.css';
 
 export default function FacePage() {
-  
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [image, setImage] = useState<string | null>(null);
@@ -16,13 +15,14 @@ export default function FacePage() {
   }, []);
 
   const startVideo = () => {
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
+    navigator.mediaDevices
+      .getUserMedia({ video: true })
+      .then((stream) => {
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
       })
-      .catch(err => console.error('error:', err));
+      .catch((err) => console.error('error:', err));
   };
 
   const loadModels = async () => {
@@ -45,7 +45,10 @@ export default function FacePage() {
         setImage(dataUrl);
 
         // Detect faces in the captured image
-        const detections = await faceapi.detectAllFaces(canvasRef.current, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptors();
+        const detections = await faceapi
+          .detectAllFaces(canvasRef.current, new faceapi.TinyFaceDetectorOptions())
+          .withFaceLandmarks()
+          .withFaceDescriptors();
         console.log('detections', detections);
       }
     }
