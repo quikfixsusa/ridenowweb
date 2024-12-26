@@ -1,8 +1,10 @@
 'use client';
 
 import * as faceapi from 'face-api.js';
-import React, { useRef, useEffect, useState } from 'react';
 import './face.css';
+import React, { useRef, useEffect, useState } from 'react';
+
+import CameraIcon from '../components/svg/CameraIcon';
 
 export default function FacePage() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -16,7 +18,7 @@ export default function FacePage() {
 
   const startVideo = () => {
     navigator.mediaDevices
-      .getUserMedia({ video: true })
+      ?.getUserMedia({ video: true })
       .then((stream) => {
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -75,13 +77,27 @@ export default function FacePage() {
     }
   };
 
+  useEffect(() => {
+    if (image) {
+      compareFaces();
+    }
+  }, [image]);
+
   return (
-    <div>
-      <video ref={videoRef} autoPlay muted width="720" height="560" />
+    <div className="flex h-screen w-full flex-col items-center justify-center bg-black">
+      {!image && <video className="h-screen w-full" ref={videoRef} autoPlay muted />}
+      {image && (
+        <div className="flex aspect-square h-auto w-full items-center justify-center sm:h-full sm:w-auto">
+          <img src={image} alt="user-image" className="h-auto w-full object-cover sm:h-full sm:w-auto" />
+        </div>
+      )}
+      <button
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 transform rounded-full border-2 border-gray-300 bg-white p-6"
+        onClick={handleCapture}
+      >
+        <CameraIcon size={24} color="black" />
+      </button>
       <canvas ref={canvasRef} style={{ display: 'none' }} />
-      <button onClick={handleCapture}>Capture Image</button>
-      <button onClick={compareFaces}>Compare Faces</button>
-      {image && <img src={image} alt="Captured" />}
     </div>
   );
 }
