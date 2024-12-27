@@ -73,7 +73,7 @@ export default function FacePage() {
   const compareFaces = async () => {
     if (image) {
       const img1 = await faceapi.fetchImage(image);
-      const img2 = await faceapi.fetchImage('/images/yo.jpg');
+      const img2 = await faceapi.fetchImage('/images/robersy.jpg');
 
       const detections1 = await faceapi.detectSingleFace(img1).withFaceLandmarks().withFaceDescriptor();
       const detections2 = await faceapi.detectSingleFace(img2).withFaceLandmarks().withFaceDescriptor();
