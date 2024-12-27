@@ -127,8 +127,9 @@ export default function FacePage() {
     <div className="flex h-screen w-full flex-col items-center justify-center bg-black">
       {!image && (
         <Webcam
-          className="h-full w-full"
+          className={`h-full w-full ${image ? 'hidden' : ''}`}
           ref={webcamRef}
+          mirrored
           videoConstraints={{
             deviceId: currentDeviceId,
           }}
