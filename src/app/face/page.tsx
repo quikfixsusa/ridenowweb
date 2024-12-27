@@ -2,37 +2,41 @@
 
 import * as faceapi from 'face-api.js';
 import './face.css';
+import { doc, getDoc } from 'firebase/firestore';
 import React, { useRef, useEffect, useState } from 'react';
 import Webcam from 'react-webcam';
 
 import CameraIcon from '../components/svg/CameraIcon';
 import CloseIcon from '../components/svg/CloseIcon';
 import SwitchCameraIcon from '../components/svg/SwitchCameraIcon';
+import { db } from '../lib/firebase';
 
-export default function FacePage() {
-  const videoRef = useRef<HTMLVideoElement>(null);
+export default function FacePage({ searchParams }: { searchParams: { userId: string } }) {
+  const userId = searchParams.userId;
   const webcamRef: React.LegacyRef<Webcam> = useRef(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const [devices, setDevices] = useState<MediaDeviceInfo[] | null>([]);
+  const [driverLicenseImage, setDriverLicenseImage] = useState<string>('');
   const [currentDeviceId, setCurrentDeviceId] = useState<ConstrainDOMString | undefined>(undefined);
   const [image, setImage] = useState<string | null>(null);
 
+  async function getDriverLicenseImage() {
+    const userDoc = await getDoc(doc(db, 'users', userId));
+    const userData = userDoc.data();
+    if (userData) {
+      setDriverLicenseImage(userData.requirements[0].image);
+    }
+  }
+
   useEffect(() => {
-    startVideo();
+    try {
+      getDriverLicenseImage();
+    } catch (error) {
+      console.log(error);
+    }
     loadModels();
   }, []);
-
-  const startVideo = () => {
-    navigator.mediaDevices
-      ?.getUserMedia({ video: true })
-      .then((stream) => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      })
-      .catch((err) => console.error('error:', err));
-  };
 
   const loadModels = async () => {
     await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
@@ -72,8 +76,9 @@ export default function FacePage() {
 
   const compareFaces = async () => {
     if (image) {
+      console.log(driverLicenseImage);
       const img1 = await faceapi.fetchImage(image);
-      const img2 = await faceapi.fetchImage('/images/yo.jpg');
+      const img2 = await faceapi.fetchImage(driverLicenseImage);
 
       const detections1 = await faceapi.detectSingleFace(img1).withFaceLandmarks().withFaceDescriptor();
       const detections2 = await faceapi.detectSingleFace(img2).withFaceLandmarks().withFaceDescriptor();
@@ -137,7 +142,11 @@ export default function FacePage() {
       )}
       {!image && (
         <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 transform items-center gap-4">
-          <button className="rounded-full border-2 border-gray-300 bg-white p-6" onClick={handleCap}>
+          <button
+            disabled={!driverLicenseImage}
+            className="rounded-full border-2 border-gray-300 bg-white p-6"
+            onClick={handleCap}
+          >
             <CameraIcon size={24} color="black" />
           </button>
           {devices && devices?.length > 1 && (
