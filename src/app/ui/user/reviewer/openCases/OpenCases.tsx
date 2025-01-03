@@ -28,7 +28,7 @@ export default function OpenCasesView() {
   }
 
   useEffect(() => {
-    if (user) {
+        if (user) {
       const unsub = onSnapshot(query(collection(db, 'users'), where('reviewer', '==', null)), (docs) => {
         if (docs.size > 0) {
           const data = docs.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
