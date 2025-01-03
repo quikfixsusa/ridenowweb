@@ -11,9 +11,8 @@ interface Props {
 }
 
 export default function Buttons({ status, id, title }: Props) {
-
   // Configurar el worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
 
   const verifyRequirement = async () => {
     const userRef = doc(db, 'users', id);
@@ -29,14 +28,14 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
       status: 'approved',
     };
     const driverLicensePdf = user.requirements[0].link;
-    
+
     const isInReview = user.requirements.some((req: any) => req.status !== 'approved');
-    
+
     // Convert PDF to image and upload to Firebase Storage
     const imageUrl = await convertPdfToImageAndUpload(driverLicensePdf);
-    
+
     user.requirements[0].image = imageUrl;
-    
+
     await updateDoc(userRef, { requirements: user.requirements, requirementsInReview: isInReview });
   };
 
@@ -57,10 +56,10 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
 
     canvas.height = viewport.height;
     canvas.width = viewport.width;
-  
+
     await page.render({ canvasContext: context, viewport: viewport }).promise;
     const dataUrl = canvas.toDataURL('image/jpeg');
-  
+
     // Upload image to Firebase Storage
     const storage = getStorage();
     const storageRef = ref(storage, `requirements/${id}/Driver License.jpg`);
@@ -68,7 +67,6 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
     const downloadUrl = await getDownloadURL(storageRef);
     return downloadUrl;
   };
-  
 
   const rejectRequirement = async (note: string) => {
     const userRef = doc(db, 'users', id);
