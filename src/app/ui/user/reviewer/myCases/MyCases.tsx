@@ -16,14 +16,12 @@ export default function MyCases() {
 
   const getUsersByType = (type: string) => {
     if (type === 'inprogress') {
-      return inProgressUsers.filter(
-        (user) => user.requirementsInReview === true || user.representativeInReview === true,
-      );
+      return inProgressUsers.filter((user) => user.requirementsInReview === true || user.vehicleInReview === true);
     } else if (type === 'verified') {
       return inProgressUsers.filter(
         (user) =>
           (user.requirementsInReview === false || user.requirementsInReview === undefined) &&
-          (user.representativeInReview === false || user.representativeInReview === undefined),
+          (user.vehicleInReview === false || user.vehicleInReview === undefined),
       );
     }
     return inProgressUsers;
