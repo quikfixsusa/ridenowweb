@@ -20,7 +20,7 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
   const [driverLicenseImage, setDriverLicenseImage] = useState<string>('');
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
+  const [facingMode, setFacingMode] = useState<'environment' | 'user'>('user');
 
   async function getDriverLicenseImage() {
     const userDoc = await getDoc(doc(db, 'users', userId));
