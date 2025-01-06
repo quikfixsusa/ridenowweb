@@ -36,15 +36,16 @@ export interface User {
   reviewer: any;
   image: string;
   stripeDetailsSubmitted: boolean;
-  representative?: Representative;
-  phoneNumber: string;
+  vehicle: Vehicle;
+  vehicleRequirements: Requirement[];
+  vehicleInReview: boolean;
+  requirements: Requirement[];
   requirementsInReview: boolean;
+  phoneNumber: string;
   businessName: string;
-  representativeInReview: boolean;
   notificationToken: string;
   userType: string;
   email: string;
-  requirements: Requirement[];
   stripeConnectAccountId: string;
   status: string;
 }
@@ -59,20 +60,19 @@ export interface CreatedAt {
   nanoseconds: number;
 }
 
-export interface Representative {
-  driverLicense: string;
-  jobTitle: string;
-  status: 'reception' | 'inReview' | 'edit' | 'approved';
-  lastName: string;
-  phoneNumber: string;
-  email: string;
-  firstName: string;
-  note: string;
+export interface Vehicle {
+  color: string;
+  make: string;
+  model: string;
+  year: string;
+  plate: string;
+  vehicle_type: string[];
 }
 
 export interface Requirement {
   title: string;
   description: string;
+  value?: string;
   link: string;
   verificationSteps: string;
   note: string;

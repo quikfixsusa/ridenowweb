@@ -105,7 +105,10 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
         />
       )}
       {!image && (
-        <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 transform items-center gap-4">
+        <div className="absolute bottom-8 left-1/2 flex -translate-x-1/2 transform items-center gap-4">
+          <div className="p-3">
+            <div className="h-[26px] w-[26px]" />
+          </div>
           <button
             disabled={!driverLicenseImage}
             className="rounded-full border-2 border-gray-300 bg-white p-6"
@@ -113,8 +116,8 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
           >
             <CameraIcon size={24} color="black" />
           </button>
-          <button className="rounded-full border-2 border-gray-300 bg-white p-4" onClick={handleSwitchCamera}>
-            <SwitchCameraIcon size={24} color="black" />
+          <button className="rounded-full border-2 border-gray-300 bg-white p-3" onClick={handleSwitchCamera}>
+            <SwitchCameraIcon size={26} color="black" />
           </button>
         </div>
       )}
