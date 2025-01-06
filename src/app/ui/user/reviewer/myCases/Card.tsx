@@ -1,5 +1,4 @@
 'use client';
-import IdIcon from '@/app/components/svg/icons/IdIcon';
 import UserIcon from '@/app/components/svg/icons/UserIcon';
 import { User } from '@/app/lib/definitions';
 import Link from 'next/link';
@@ -60,14 +59,6 @@ export default function Card({ userData }: { userData: User }) {
       </div>
       <div className="flex w-full items-center justify-between">
         <p className="text-sm font-medium text-gray-500">Requirements:</p>
-        {userData.representative && (
-          <div
-            className={`flex items-center gap-2 rounded-md ${getColorByStatus(userData.representative.status)} px-3 py-1`}
-          >
-            <IdIcon size={18} />
-            <p className="text-sm">Representative</p>
-          </div>
-        )}
       </div>
       <div className="flex w-full">
         {userData.requirements.map((requirement, index) => (
