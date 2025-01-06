@@ -76,7 +76,6 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
 
   const compareFaces = async () => {
     if (image) {
-      console.log(driverLicenseImage);
       const img1 = await faceapi.fetchImage(image);
       const img2 = await faceapi.fetchImage(driverLicenseImage);
 
