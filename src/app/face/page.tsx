@@ -4,6 +4,7 @@ import * as faceapi from 'face-api.js';
 import './face.css';
 import { doc, getDoc } from 'firebase/firestore';
 import React, { useRef, useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import Webcam from 'react-webcam';
 
 import CameraIcon from '../components/svg/CameraIcon';
@@ -16,10 +17,10 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
   const webcamRef: React.LegacyRef<Webcam> = useRef(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const [devices, setDevices] = useState<MediaDeviceInfo[] | null>([]);
   const [driverLicenseImage, setDriverLicenseImage] = useState<string>('');
-  const [currentDeviceId, setCurrentDeviceId] = useState<ConstrainDOMString | undefined>(undefined);
   const [image, setImage] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
 
   async function getDriverLicenseImage() {
     const userDoc = await getDoc(doc(db, 'users', userId));
@@ -45,28 +46,6 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
     await faceapi.nets.ssdMobilenetv1.loadFromUri('/models'); // Load SsdMobilenetv1 model
   };
 
-  /* const handleCapture = async () => {
-    if (videoRef.current && canvasRef.current) {
-      const displaySize = { width: videoRef.current.videoWidth, height: videoRef.current.videoHeight };
-      canvasRef.current.width = displaySize.width;
-      canvasRef.current.height = displaySize.height;
-
-      const context = canvasRef.current.getContext('2d');
-      if (context) {
-        context.drawImage(videoRef.current, 0, 0, displaySize.width, displaySize.height);
-        const dataUrl = canvasRef.current.toDataURL('image/jpeg');
-        setImage(dataUrl);
-
-        // Detect faces in the captured image
-        const detections = await faceapi
-          .detectAllFaces(canvasRef.current, new faceapi.TinyFaceDetectorOptions())
-          .withFaceLandmarks()
-          .withFaceDescriptors();
-        console.log('detections', detections);
-      }
-    }
-  }; */
-
   const handleCap = () => {
     const imageSrc = webcamRef.current?.getScreenshot();
     if (imageSrc) {
@@ -76,33 +55,35 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
 
   const compareFaces = async () => {
     if (image) {
-      console.log(driverLicenseImage);
-      const img1 = await faceapi.fetchImage(image);
-      const img2 = await faceapi.fetchImage(driverLicenseImage);
+      setLoading(true);
+      try {
+        const img1 = await faceapi.fetchImage(image);
+        const img2 = await faceapi.fetchImage(driverLicenseImage);
 
-      const detections1 = await faceapi.detectSingleFace(img1).withFaceLandmarks().withFaceDescriptor();
-      const detections2 = await faceapi.detectSingleFace(img2).withFaceLandmarks().withFaceDescriptor();
+        const detections1 = await faceapi.detectSingleFace(img1).withFaceLandmarks().withFaceDescriptor();
+        const detections2 = await faceapi.detectSingleFace(img2).withFaceLandmarks().withFaceDescriptor();
 
-      if (detections1 && detections2) {
-        const distance = faceapi.euclideanDistance(detections1.descriptor, detections2.descriptor);
-        if (distance < 0.6) {
-          alert('Faces match!');
+        if (detections1 && detections2) {
+          const distance = faceapi.euclideanDistance(detections1.descriptor, detections2.descriptor);
+          if (distance < 0.6) {
+            alert('Faces match!');
+          } else {
+            alert('Faces do not match.');
+          }
         } else {
-          alert('Faces do not match.');
+          alert('Could not detect faces in one or both images.');
         }
-      } else {
-        alert('Could not detect faces in one or both images.');
+        setLoading(false);
+      } catch (error) {
+        toast.error('Error matching faces.');
+        setLoading(false);
       }
     }
   };
 
   const handleSwitchCamera = () => {
-    if (devices === null) return;
-    if (devices.length > 1) {
-      const currentIndex = devices.findIndex((device) => device.deviceId === currentDeviceId);
-      const nextIndex = (currentIndex + 1) % devices.length;
-      setCurrentDeviceId(devices[nextIndex].deviceId); // Cambia al siguiente dispositivo
-    }
+    if (facingMode === 'environment') setFacingMode('user');
+    if (facingMode === 'user') setFacingMode('environment');
   };
 
   useEffect(() => {
@@ -111,23 +92,6 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
     }
   }, [image]);
 
-  useEffect(() => {
-    // Obtén los dispositivos disponibles
-    const getDevices = async () => {
-      try {
-        const devices = await navigator.mediaDevices.enumerateDevices();
-        const videoDevices = devices.filter((device) => device.kind === 'videoinput');
-        setDevices(videoDevices);
-        if (videoDevices.length > 0) {
-          setCurrentDeviceId(videoDevices[0].deviceId); // Por defecto, selecciona la primera cámara
-        }
-      } catch (error) {
-        console.error('Error al enumerar dispositivos:', error);
-      }
-    };
-
-    getDevices();
-  }, []);
   return (
     <div className="flex h-screen w-full flex-col items-center justify-center bg-black">
       {!image && (
@@ -136,7 +100,7 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
           ref={webcamRef}
           mirrored
           videoConstraints={{
-            deviceId: currentDeviceId,
+            facingMode,
           }}
         />
       )}
@@ -149,17 +113,20 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
           >
             <CameraIcon size={24} color="black" />
           </button>
-          {devices && devices?.length > 1 && (
-            <button className="rounded-full border-2 border-gray-300 bg-white p-4" onClick={handleSwitchCamera}>
-              <SwitchCameraIcon size={24} color="black" />
-            </button>
-          )}
+          <button className="rounded-full border-2 border-gray-300 bg-white p-4" onClick={handleSwitchCamera}>
+            <SwitchCameraIcon size={24} color="black" />
+          </button>
         </div>
       )}
       {image && (
         <button className="absolute left-4 top-4" onClick={() => setImage(null)}>
           <CloseIcon size={24} color="white" />
         </button>
+      )}
+      {loading && (
+        <div className="absolute flex h-full w-full items-center justify-center bg-[rgba(0,0,0,0.5)]">
+          <div className="loader" />
+        </div>
       )}
       {image && <img src={image} alt="user-image" className="h-auto w-full sm:h-full sm:w-auto" />}
       <canvas ref={canvasRef} style={{ display: 'none' }} />
