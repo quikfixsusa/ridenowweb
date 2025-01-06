@@ -9,9 +9,11 @@ interface Props {
   status: 'reception' | 'inReview' | 'edit' | 'approved';
   id: string;
   title: string;
+  format: string;
+  value?: string;
 }
 
-export default function ContentCard({ verificationSteps, note, link, status, id, title }: Props) {
+export default function ContentCard({ verificationSteps, note, link, status, id, title, value }: Props) {
   function formatText(text: string) {
     return text.split('*').map((line, index) => (
       <p className="text-gray-600" key={index}>
@@ -57,6 +59,12 @@ export default function ContentCard({ verificationSteps, note, link, status, id,
           <b>{parseStatus(status)}:</b> {getMessageByStatus(status)}
         </p>
       </div>
+      {value && (
+        <div>
+          <p className="text-lg font-semibold">{title}</p>
+          <p className="text-2xl font-bold text-black">{value}</p>
+        </div>
+      )}
       <div>
         <p className="text-lg font-semibold text-gray-600">Verification Steps:</p>
         <div>{formatText(verificationSteps)}</div>

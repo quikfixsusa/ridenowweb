@@ -14,6 +14,8 @@ export default function CardRequirement({ data, id }: { data: Requirement; id: s
       {open && (
         <ContentCard
           verificationSteps={data.verificationSteps}
+          format={data.format}
+          value={data.value}
           status={data.status}
           link={data.link}
           note={data.note}
