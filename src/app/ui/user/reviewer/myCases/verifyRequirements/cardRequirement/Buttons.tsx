@@ -1,5 +1,7 @@
 import { db } from '@/app/lib/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { getStorage, ref, uploadString, getDownloadURL } from 'firebase/storage';
+import * as pdfjsLib from 'pdfjs-dist';
 import Swal from 'sweetalert2';
 
 interface Props {
@@ -9,6 +11,9 @@ interface Props {
 }
 
 export default function Buttons({ status, id, title }: Props) {
+  // Configurar el worker
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
+
   const verifyRequirement = async () => {
     const userRef = doc(db, 'users', id);
     const userDoc = await getDoc(userRef);
@@ -22,9 +27,45 @@ export default function Buttons({ status, id, title }: Props) {
       ...user.requirements[requirement],
       status: 'approved',
     };
+    const driverLicensePdf = user.requirements[0].link;
+
     const isInReview = user.requirements.some((req: any) => req.status !== 'approved');
 
+    // Convert PDF to image and upload to Firebase Storage
+    const imageUrl = await convertPdfToImageAndUpload(driverLicensePdf);
+
+    user.requirements[0].image = imageUrl;
+
     await updateDoc(userRef, { requirements: user.requirements, requirementsInReview: isInReview });
+  };
+
+  const convertPdfToImageAndUpload = async (pdfUrl: string) => {
+    const response = await fetch(pdfUrl);
+    const arrayBuffer = await response.arrayBuffer();
+    console.log(arrayBuffer);
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    console.log(pdf.getData());
+    const page = await pdf.getPage(1);
+    const viewport = page.getViewport({ scale: 1.0 });
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+
+    if (!context) {
+      throw new Error('Failed to get canvas context');
+    }
+
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+
+    await page.render({ canvasContext: context, viewport: viewport }).promise;
+    const dataUrl = canvas.toDataURL('image/jpeg');
+
+    // Upload image to Firebase Storage
+    const storage = getStorage();
+    const storageRef = ref(storage, `requirements/${id}/Driver License.jpg`);
+    await uploadString(storageRef, dataUrl, 'data_url');
+    const downloadUrl = await getDownloadURL(storageRef);
+    return downloadUrl;
   };
 
   const rejectRequirement = async (note: string) => {
