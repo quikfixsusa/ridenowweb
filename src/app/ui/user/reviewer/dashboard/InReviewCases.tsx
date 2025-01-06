@@ -20,7 +20,8 @@ export default function InReviewCases() {
   const getUsersWithRequirementsInReview = () => {
     const inReviewUsers = inProgressUsers.filter(
       (user) =>
-        user.requirements.some((req) => req.status === 'inReview') || user.representative?.status === 'inReview',
+        user.requirements.some((req) => req.status === 'inReview') ||
+        user.vehicleRequirements.some((req) => req.status === 'inReview'),
     );
     return sortByCreatedAt(inReviewUsers).slice(0, 2);
   };
