@@ -5,7 +5,7 @@ import './face.css';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import React, { useRef, useEffect, useState } from 'react';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import Webcam from 'react-webcam';
 
 import CameraIcon from '../components/svg/CameraIcon';
@@ -110,11 +110,11 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
 
   return (
     <div className="flex h-screen w-full flex-col items-center justify-center bg-black">
-      <ToastContainer />
       {!image && (
         <Webcam
           className={`h-full w-full ${image ? 'hidden' : ''}`}
           ref={webcamRef}
+          onUserMediaError={() => router.push('/face/error')}
           mirrored={facingMode === 'user'}
           videoConstraints={{
             facingMode,
@@ -139,7 +139,7 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
         </div>
       )}
       {image && (
-        <button className="absolute left-4 top-4" onClick={() => setImage(null)}>
+        <button className="absolute left-4 top-12" onClick={() => setImage(null)}>
           <CloseIcon size={24} color="white" />
         </button>
       )}
