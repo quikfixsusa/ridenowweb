@@ -2,9 +2,10 @@
 
 import * as faceapi from 'face-api.js';
 import './face.css';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
 import React, { useRef, useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import Webcam from 'react-webcam';
 
 import CameraIcon from '../components/svg/CameraIcon';
@@ -14,6 +15,7 @@ import { db } from '../lib/firebase';
 
 export default function FacePage({ searchParams }: { searchParams: { userId: string } }) {
   const userId = searchParams.userId;
+  const router = useRouter();
   const webcamRef: React.LegacyRef<Webcam> = useRef(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -53,6 +55,13 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
     }
   };
 
+  const handleFacesMatch = async () => {
+    const userRef = doc(db, 'users', userId);
+    await updateDoc(userRef, { verifyIdentityRequired: false });
+    setLoading(false);
+    router.push('/face/success');
+  };
+
   const compareFaces = async () => {
     if (image) {
       setLoading(true);
@@ -66,14 +75,21 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
         if (detections1 && detections2) {
           const distance = faceapi.euclideanDistance(detections1.descriptor, detections2.descriptor);
           if (distance < 0.6) {
-            alert('Faces match!');
+            toast.success('Faces match!');
+            try {
+              await handleFacesMatch();
+            } catch (error) {
+              toast.error('An error ocurred, please try again.');
+              setLoading(false);
+            }
           } else {
-            alert('Faces do not match.');
+            toast.error('Faces do not match, try again.');
+            setLoading(false);
           }
         } else {
           alert('Could not detect faces in one or both images.');
+          setLoading(false);
         }
-        setLoading(false);
       } catch (error) {
         toast.error('Error matching faces.');
         setLoading(false);
@@ -94,6 +110,7 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
 
   return (
     <div className="flex h-screen w-full flex-col items-center justify-center bg-black">
+      <ToastContainer />
       {!image && (
         <Webcam
           className={`h-full w-full ${image ? 'hidden' : ''}`}
@@ -127,8 +144,9 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
         </button>
       )}
       {loading && (
-        <div className="absolute flex h-full w-full items-center justify-center bg-[rgba(0,0,0,0.5)]">
+        <div className="absolute flex h-full w-full items-center justify-center gap-2 bg-[rgba(0,0,0,0.5)]">
           <div className="loader" />
+          <p className="text-white">Verifying identity...</p>
         </div>
       )}
       {image && <img src={image} alt="user-image" className="h-auto w-full sm:h-full sm:w-auto" />}
