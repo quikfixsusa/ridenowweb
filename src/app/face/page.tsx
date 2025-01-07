@@ -98,7 +98,7 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
         <Webcam
           className={`h-full w-full ${image ? 'hidden' : ''}`}
           ref={webcamRef}
-          mirrored
+          mirrored={facingMode === 'user'}
           videoConstraints={{
             facingMode,
           }}
