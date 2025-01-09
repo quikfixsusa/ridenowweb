@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import Buttons from './Buttons';
+import ButtonsVehicle from './ButtonsVehicle';
 
 interface Props {
   verificationSteps: string;
@@ -11,9 +12,10 @@ interface Props {
   title: string;
   format: string;
   value?: string;
+  vehicle?: boolean;
 }
 
-export default function ContentCard({ verificationSteps, note, link, status, id, title, value }: Props) {
+export default function ContentCard({ verificationSteps, note, link, status, id, title, value, vehicle }: Props) {
   function formatText(text: string) {
     return text.split('*').map((line, index) => (
       <p className="text-gray-600" key={index}>
@@ -81,7 +83,8 @@ export default function ContentCard({ verificationSteps, note, link, status, id,
             View Attached Document
           </Link>
         )}
-        <Buttons status={status} id={id} title={title} />
+        {!vehicle && <Buttons status={status} id={id} title={title} />}
+        {vehicle && <ButtonsVehicle status={status} id={id} title={title} />}
       </div>
     </div>
   );

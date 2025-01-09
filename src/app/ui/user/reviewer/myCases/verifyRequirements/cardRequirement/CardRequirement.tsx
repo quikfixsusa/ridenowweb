@@ -5,7 +5,7 @@ import { useState } from 'react';
 import ContentCard from './ContentCard';
 import Header from './Header';
 
-export default function CardRequirement({ data, id }: { data: Requirement; id: string }) {
+export default function CardRequirement({ data, id, vehicle }: { data: Requirement; id: string; vehicle?: boolean }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -13,6 +13,7 @@ export default function CardRequirement({ data, id }: { data: Requirement; id: s
       <Header title={data.title} description={data.description} open={open} setOpen={setOpen} status={data.status} />
       {open && (
         <ContentCard
+          vehicle={vehicle}
           verificationSteps={data.verificationSteps}
           format={data.format}
           value={data.value}
