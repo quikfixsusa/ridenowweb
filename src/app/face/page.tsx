@@ -23,6 +23,9 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('user');
+  const [moveRight, setMoveRight] = useState<boolean>(false);
+  const [moveLeft, setMoveLeft] = useState<boolean>(false);
+  const [moveUp, setMoveUp] = useState<boolean>(false);
 
   async function getDriverLicenseImage() {
     const userDoc = await getDoc(doc(db, 'users', userId));
@@ -69,6 +72,8 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
         const img1 = await faceapi.fetchImage(image);
         const img2 = await faceapi.fetchImage(driverLicenseImage);
 
+        
+
         const detections1 = await faceapi.detectSingleFace(img1).withFaceLandmarks().withFaceDescriptor();
         const detections2 = await faceapi.detectSingleFace(img2).withFaceLandmarks().withFaceDescriptor();
 
@@ -108,6 +113,50 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
     }
   }, [image]);
 
+  // *** code added for movement detection *** //
+
+  const detectMovement = async (direction: 'left' | 'right' | 'up') => {
+    if (webcamRef.current && webcamRef.current.video) {
+      const initialDetections = await faceapi.detectSingleFace(webcamRef.current.video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
+      if (initialDetections) {
+        const initialPosition = initialDetections.landmarks.getNose()[0];
+        console.log('Initial position:', initialPosition);
+
+        setTimeout(async () => {
+          if (webcamRef.current && webcamRef.current.video) {
+          
+            const newDetections = await faceapi.detectSingleFace(webcamRef.current.video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
+          console.log('New detections:', newDetections);
+          if (newDetections) {
+            const newPosition = newDetections.landmarks.getNose()[0];
+            const distanceX = newPosition.x - initialPosition.x;
+            const distanceY = newPosition.y - initialPosition.y;
+
+            if (direction === 'right' && distanceX < -20) {
+              console.log('Moved right');
+              setMoveLeft(true);
+            } else if (direction === 'left' && distanceX > 20) {
+              console.log('Moved left');
+              setMoveRight(true);
+            } else if (direction === 'up' && distanceY < -20) {
+              console.log('Moved up');
+              setMoveUp(true);
+            }
+          }
+        }
+        }, 2000); // Wait for 2 seconds to detect movement
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (moveLeft && moveRight && moveUp) {
+      console.log('All movements detected');
+    }
+  }, [moveLeft, moveRight, moveUp]);
+
+  // *** end of code added for movement detection *** //
+
   return (
     <div className="flex h-screen w-full flex-col items-center justify-center bg-black">
       {!image && (
@@ -127,7 +176,7 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
             <div className="h-[26px] w-[26px]" />
           </div>
           <button
-            disabled={!driverLicenseImage}
+            disabled={!driverLicenseImage || !(moveLeft && moveRight && moveUp)}
             className="rounded-full border-2 border-gray-300 bg-white p-6"
             onClick={handleCap}
           >
@@ -151,6 +200,18 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
       )}
       {image && <img src={image} alt="user-image" className="h-auto w-full sm:h-full sm:w-auto" />}
       <canvas ref={canvasRef} style={{ display: 'none' }} />
+      <div className="absolute top-6 left-1/2 transform -translate-x-1/2 flex gap-4">
+        <button onClick={() => detectMovement('left')} className="rounded-full border-2 border-gray-300 bg-white p-4">
+          Move Left
+        </button>
+        <button onClick={() => detectMovement('right')} className="rounded-full border-2 border-gray-300 bg-white p-4">
+          Move Right
+        </button>
+        <button onClick={() => detectMovement('up')} className="rounded-full border-2 border-gray-300 bg-white p-4">
+          Move Up
+        </button>
+      </div>
+      
     </div>
   );
 }
