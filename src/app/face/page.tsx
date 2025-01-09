@@ -60,7 +60,7 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
 
   const handleFacesMatch = async () => {
     const userRef = doc(db, 'users', userId);
-    await updateDoc(userRef, { verifyIdentityRequired: false });
+    await updateDoc(userRef, { verifyIdentityRequired: false, status: 'available' });
     setLoading(false);
     router.push('/face/success');
   };
