@@ -26,6 +26,7 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
   const [moveRight, setMoveRight] = useState<boolean>(false);
   const [moveLeft, setMoveLeft] = useState<boolean>(false);
   const [moveUp, setMoveUp] = useState<boolean>(false);
+  const [instruction, setInstruction] = useState<string>('Move your face to the right');
 
   async function getDriverLicenseImage() {
     const userDoc = await getDoc(doc(db, 'users', userId));
@@ -42,6 +43,7 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
       console.log(error);
     }
     loadModels();
+    startMovementDetection();
   }, []);
 
   const loadModels = async () => {
@@ -116,42 +118,65 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
   // *** code added for movement detection *** //
 
   const detectMovement = async (direction: 'left' | 'right' | 'up') => {
-    if (webcamRef.current && webcamRef.current.video) {
-      const initialDetections = await faceapi.detectSingleFace(webcamRef.current.video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
-      if (initialDetections) {
-        const initialPosition = initialDetections.landmarks.getNose()[0];
-        console.log('Initial position:', initialPosition);
+    return new Promise<boolean>(async (resolve) => {
+      const interval = setInterval(async () => {
+        if (webcamRef.current && webcamRef.current.video) {
+          const initialDetections = await faceapi.detectSingleFace(webcamRef.current.video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
+          if (initialDetections) {
+            const initialPosition = initialDetections.landmarks.getNose()[0];
+            
 
-        setTimeout(async () => {
-          if (webcamRef.current && webcamRef.current.video) {
-          
-            const newDetections = await faceapi.detectSingleFace(webcamRef.current.video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
-          console.log('New detections:', newDetections);
-          if (newDetections) {
-            const newPosition = newDetections.landmarks.getNose()[0];
-            const distanceX = newPosition.x - initialPosition.x;
-            const distanceY = newPosition.y - initialPosition.y;
+            setTimeout(async () => {
+              if (webcamRef.current && webcamRef.current.video) {
+                const newDetections = await faceapi.detectSingleFace(webcamRef.current.video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
+                
+                if (newDetections) {
+                  const newPosition = newDetections.landmarks.getNose()[0];
+                  const distanceX = newPosition.x - initialPosition.x;
+                  const distanceY = newPosition.y - initialPosition.y;
 
-            if (direction === 'right' && distanceX < -20) {
-              console.log('Moved right');
-              setMoveLeft(true);
-            } else if (direction === 'left' && distanceX > 20) {
-              console.log('Moved left');
-              setMoveRight(true);
-            } else if (direction === 'up' && distanceY < -20) {
-              console.log('Moved up');
-              setMoveUp(true);
-            }
+                  if (direction === 'right' && distanceX < -20) {
+                    
+                    setMoveRight(true);
+                    setInstruction('Move your face to the left');
+                    clearInterval(interval);
+                    resolve(true);
+                  } else if (direction === 'left' && distanceX > 20) {
+                    
+                    setMoveLeft(true);
+                    setInstruction('Move your face up');
+                    clearInterval(interval);
+                    resolve(true);
+                  } else if (direction === 'up' && distanceY < -20) {
+                   
+                    setMoveUp(true);
+                    setInstruction('Press the camera button to take a picture');
+                    clearInterval(interval);
+                    resolve(true);
+                  }
+                }
+              }
+            }, 2000); // Wait for 2 seconds to detect movement
           }
         }
-        }, 2000); // Wait for 2 seconds to detect movement
-      }
+      }, 1000); // Check for movement every second
+    });
+  };
+
+  const startMovementDetection = async () => {
+     let success  = await detectMovement('right');
+   
+    if (success) {
+      success = await detectMovement('left');
+    }
+    if (success) {
+      await detectMovement('up');
     }
   };
 
   useEffect(() => {
     if (moveLeft && moveRight && moveUp) {
-      console.log('All movements detected');
+      setInstruction('Press the camera button to take a picture');
     }
   }, [moveLeft, moveRight, moveUp]);
 
@@ -200,16 +225,9 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
       )}
       {image && <img src={image} alt="user-image" className="h-auto w-full sm:h-full sm:w-auto" />}
       <canvas ref={canvasRef} style={{ display: 'none' }} />
-      <div className="absolute top-6 left-1/2 transform -translate-x-1/2 flex gap-4">
-        <button onClick={() => detectMovement('left')} className="rounded-full border-2 border-gray-300 bg-white p-4">
-          Move Left
-        </button>
-        <button onClick={() => detectMovement('right')} className="rounded-full border-2 border-gray-300 bg-white p-4">
-          Move Right
-        </button>
-        <button onClick={() => detectMovement('up')} className="rounded-full border-2 border-gray-300 bg-white p-4">
-          Move Up
-        </button>
+      
+      <div className="absolute bottom-40 left-1/2 transform -translate-x-1/2 text-white">
+        {instruction}
       </div>
       
     </div>
