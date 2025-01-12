@@ -117,7 +117,7 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
     const eyeDistance = Math.abs(leftEye[0].x - rightEye[3].x);
     const noseToEyeDistance = Math.abs(nose[0].x - (leftEye[0].x + rightEye[3].x) / 2);
 
-    return noseToEyeDistance < eyeDistance * 0.1; // Adjust this threshold as needed
+    return noseToEyeDistance < eyeDistance * 0.2; // Adjust this threshold as needed
   };
 
   const isFaceLeftProfile = (landmarks: faceapi.FaceLandmarks68) => {
