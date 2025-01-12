@@ -8,9 +8,16 @@ import React, { useRef, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import Webcam from 'react-webcam';
 
-import CameraIcon from '../components/svg/CameraIcon';
 import CloseIcon from '../components/svg/CloseIcon';
-import SwitchCameraIcon from '../components/svg/SwitchCameraIcon';
+import HorizontalFaceForward from '../components/svg/verifyIdentity/HorizontalFaceForward';
+import HorizontalFaceLeft from '../components/svg/verifyIdentity/HorizontalFaceLeft';
+import HorizontalFaceRight from '../components/svg/verifyIdentity/HorizontalFaceRight';
+import MiniFaceCenter from '../components/svg/verifyIdentity/MiniFaceCenter';
+import MiniFaceLeft from '../components/svg/verifyIdentity/MiniFaceLeft';
+import MiniFaceRight from '../components/svg/verifyIdentity/MiniFaceRight';
+import VerticalFaceForward from '../components/svg/verifyIdentity/VerticalFaceForward';
+import VerticalFaceLeft from '../components/svg/verifyIdentity/VerticalFaceLeft';
+import VerticalFaceRight from '../components/svg/verifyIdentity/VerticalFaceRight';
 import { db } from '../lib/firebase';
 
 export default function FacePage({ searchParams }: { searchParams: { userId: string } }) {
@@ -19,10 +26,24 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
   const webcamRef: React.LegacyRef<Webcam> = useRef(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  const [widthCamera, setWidthCamera] = useState<number | null>(null);
+  const [heigthCamera, setHeigthCamera] = useState<number | null>(null);
   const [driverLicenseImage, setDriverLicenseImage] = useState<string>('');
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [facingMode, setFacingMode] = useState<'environment' | 'user'>('user');
+  const [facingMode] = useState<'environment' | 'user'>('user');
+
+  const [moveRight, setMoveRight] = useState<boolean>(false);
+  const [moveLeft, setMoveLeft] = useState<boolean>(false);
+  const [moveCenter, setMoveCenter] = useState<boolean>(false);
+  const [moveFinalCenter, setMoveFinalCenter] = useState<boolean>(false);
+
+  const [checkCenter, setCheckCenter] = useState<boolean>(false);
+  const [checkRight, setCheckRight] = useState<boolean>(false);
+  const [checkLeft, setCheckLeft] = useState<boolean>(false);
+  const [checkFinalCenter, setCheckFinalCenter] = useState<boolean>(false);
+
+  const [instruction, setInstruction] = useState<string>('Center your face');
 
   async function getDriverLicenseImage() {
     const userDoc = await getDoc(doc(db, 'users', userId));
@@ -31,15 +52,6 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
       setDriverLicenseImage(userData.requirements[0].image);
     }
   }
-
-  useEffect(() => {
-    try {
-      getDriverLicenseImage();
-    } catch (error) {
-      console.log(error);
-    }
-    loadModels();
-  }, []);
 
   const loadModels = async () => {
     await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
@@ -97,9 +109,108 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
     }
   };
 
-  const handleSwitchCamera = () => {
-    if (facingMode === 'environment') setFacingMode('user');
-    if (facingMode === 'user') setFacingMode('environment');
+  const isFaceForward = (landmarks: faceapi.FaceLandmarks68) => {
+    const leftEye = landmarks.getLeftEye();
+    const rightEye = landmarks.getRightEye();
+    const nose = landmarks.getNose();
+
+    const eyeDistance = Math.abs(leftEye[0].x - rightEye[3].x);
+    const noseToEyeDistance = Math.abs(nose[0].x - (leftEye[0].x + rightEye[3].x) / 2);
+
+    return noseToEyeDistance < eyeDistance * 0.1; // Adjust this threshold as needed
+  };
+
+  const isFaceLeftProfile = (landmarks: faceapi.FaceLandmarks68) => {
+    const leftEye = landmarks.getLeftEye();
+    const rightEye = landmarks.getRightEye();
+    const nose = landmarks.getNose();
+
+    const eyeDistance = Math.abs(leftEye[0].x - rightEye[3].x);
+    const noseToRightEyeDistance = Math.abs(nose[0].x - rightEye[3].x);
+
+    // Si la nariz está significativamente más cerca del ojo derecho, es perfil izquierdo
+    return noseToRightEyeDistance > eyeDistance * 0.6; // Ajustar el umbral si es necesario
+  };
+
+  const isFaceRightProfile = (landmarks: faceapi.FaceLandmarks68) => {
+    const leftEye = landmarks.getLeftEye();
+    const rightEye = landmarks.getRightEye();
+    const nose = landmarks.getNose();
+
+    const eyeDistance = Math.abs(leftEye[0].x - rightEye[3].x);
+    const noseToLeftEyeDistance = Math.abs(nose[0].x - leftEye[0].x);
+
+    // Si la nariz está significativamente más cerca del ojo izquierdo, es perfil derecho
+    return noseToLeftEyeDistance > eyeDistance * 0.6; // Ajustar el umbral si es necesario
+  };
+
+  const detectMovement = async (direction: 'left' | 'right' | 'center' | 'finalCenter') => {
+    return new Promise<boolean>(async (resolve) => {
+      const interval = setInterval(async () => {
+        if (webcamRef.current && webcamRef.current.video) {
+          setTimeout(async () => {
+            if (webcamRef.current && webcamRef.current.video) {
+              const newDetections = await faceapi
+                .detectSingleFace(webcamRef.current.video, new faceapi.TinyFaceDetectorOptions())
+                .withFaceLandmarks();
+              if (newDetections) {
+                const isForward = isFaceForward(newDetections.landmarks);
+                const isLeftProfile = isFaceLeftProfile(newDetections.landmarks);
+                const isRightProfile = isFaceRightProfile(newDetections.landmarks);
+
+                if (direction === 'center' && isForward) {
+                  setCheckCenter(true);
+                  setTimeout(() => {
+                    setInstruction('Look Right');
+                    setMoveCenter(true);
+                    clearInterval(interval);
+                    resolve(true);
+                  }, 1000);
+                } else if (direction === 'right' && isLeftProfile) {
+                  setCheckRight(true);
+                  setTimeout(() => {
+                    setInstruction('Look Left');
+                    setMoveRight(true);
+                    clearInterval(interval);
+                    resolve(true);
+                  }, 1000);
+                } else if (direction === 'left' && isRightProfile) {
+                  setCheckLeft(true);
+                  setTimeout(() => {
+                    setInstruction('Center your face');
+                    setMoveLeft(true);
+                    clearInterval(interval);
+                    resolve(true);
+                  }, 1000);
+                } else if (direction === 'finalCenter' && isForward) {
+                  setCheckFinalCenter(true);
+                  setTimeout(() => {
+                    setMoveFinalCenter(true);
+                    clearInterval(interval);
+                    resolve(true);
+                  }, 1000);
+                }
+              }
+            }
+          }, 2000); // Wait for 2 seconds to detect movement
+        }
+      }, 1000); // Check for movement every second
+    });
+  };
+
+  const startMovementDetection = async () => {
+    let success = await detectMovement('center');
+
+    if (success) {
+      success = await detectMovement('right');
+    }
+    if (success) {
+      success = await detectMovement('left');
+    }
+    if (success) {
+      success = await detectMovement('finalCenter');
+      handleCap();
+    }
   };
 
   useEffect(() => {
@@ -108,34 +219,68 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
     }
   }, [image]);
 
+  useEffect(() => {
+    try {
+      getDriverLicenseImage();
+    } catch (error) {
+      console.log(error);
+    }
+    loadModels();
+  }, []);
+
+  useEffect(() => {
+    if (webcamRef.current && webcamRef.current.video) {
+      const video = webcamRef.current.video;
+      const width = video.offsetWidth;
+      const height = video.offsetHeight;
+      setWidthCamera(width);
+      setHeigthCamera(height);
+    }
+  }, [webcamRef.current]);
+
+  useEffect(() => {
+    startMovementDetection();
+  }, []);
   return (
     <div className="flex h-screen w-full flex-col items-center justify-center bg-black">
       {!image && (
-        <Webcam
-          className={`h-full w-full ${image ? 'hidden' : ''}`}
-          ref={webcamRef}
-          onUserMediaError={() => router.push('/face/error')}
-          mirrored={facingMode === 'user'}
-          videoConstraints={{
-            facingMode,
-          }}
-        />
-      )}
-      {!image && (
-        <div className="absolute bottom-8 left-1/2 flex -translate-x-1/2 transform items-center gap-4">
-          <div className="p-3">
-            <div className="h-[26px] w-[26px]" />
-          </div>
-          <button
-            disabled={!driverLicenseImage}
-            className="rounded-full border-2 border-gray-300 bg-white p-6"
-            onClick={handleCap}
-          >
-            <CameraIcon size={24} color="black" />
-          </button>
-          <button className="rounded-full border-2 border-gray-300 bg-white p-3" onClick={handleSwitchCamera}>
-            <SwitchCameraIcon size={26} color="black" />
-          </button>
+        <div className="relative flex w-full items-center justify-center">
+          {heigthCamera && widthCamera && heigthCamera > widthCamera && !moveCenter && (
+            <VerticalFaceForward check={checkCenter} />
+          )}
+          {heigthCamera && widthCamera && heigthCamera < widthCamera && !moveCenter && (
+            <HorizontalFaceForward check={checkCenter} />
+          )}
+
+          {heigthCamera && widthCamera && heigthCamera > widthCamera && moveCenter && !moveRight && (
+            <VerticalFaceRight check={checkRight} />
+          )}
+          {heigthCamera && widthCamera && heigthCamera < widthCamera && moveCenter && !moveRight && (
+            <HorizontalFaceRight check={checkRight} />
+          )}
+
+          {heigthCamera && widthCamera && heigthCamera > widthCamera && moveRight && !moveLeft && (
+            <VerticalFaceLeft check={checkLeft} />
+          )}
+          {heigthCamera && widthCamera && heigthCamera < widthCamera && moveRight && !moveLeft && (
+            <HorizontalFaceLeft check={checkLeft} />
+          )}
+
+          {heigthCamera && widthCamera && heigthCamera > widthCamera && !moveFinalCenter && moveLeft && (
+            <VerticalFaceForward check={checkFinalCenter} />
+          )}
+          {heigthCamera && widthCamera && heigthCamera < widthCamera && !moveFinalCenter && moveLeft && (
+            <HorizontalFaceForward check={checkFinalCenter} />
+          )}
+          <Webcam
+            className={`relative w-full ${image ? 'hidden' : ''}`}
+            ref={webcamRef}
+            onUserMediaError={() => router.push('/face/error')}
+            mirrored={facingMode === 'user'}
+            videoConstraints={{
+              facingMode,
+            }}
+          />
         </div>
       )}
       {image && (
@@ -151,6 +296,16 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
       )}
       {image && <img src={image} alt="user-image" className="h-auto w-full sm:h-full sm:w-auto" />}
       <canvas ref={canvasRef} style={{ display: 'none' }} />
+
+      {!moveFinalCenter && (
+        <div className="absolute bottom-12 left-1/2 flex -translate-x-1/2 transform flex-col items-center gap-7">
+          <p className="font-medium text-white">{instruction}</p>
+          {!moveCenter && <MiniFaceCenter size={68} />}
+          {moveCenter && !moveRight && <MiniFaceRight size={68} />}
+          {moveRight && !moveLeft && <MiniFaceLeft size={68} />}
+          {moveLeft && !moveFinalCenter && <MiniFaceCenter size={68} />}
+        </div>
+      )}
     </div>
   );
 }
