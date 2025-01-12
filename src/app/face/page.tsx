@@ -298,12 +298,12 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 
       {!moveFinalCenter && (
-        <div className="absolute bottom-8 left-1/2 flex -translate-x-1/2 transform flex-col items-center gap-4">
+        <div className="absolute bottom-8 left-1/2 flex -translate-x-1/2 transform flex-col items-center gap-2">
           <p className="font-medium text-white">{instruction}</p>
-          {!moveCenter && <MiniFaceCenter size={48} />}
-          {moveCenter && !moveRight && <MiniFaceRight size={48} />}
-          {moveRight && !moveLeft && <MiniFaceLeft size={48} />}
-          {moveLeft && !moveFinalCenter && <MiniFaceCenter size={48} />}
+          {!moveCenter && <MiniFaceCenter size={42} />}
+          {moveCenter && !moveRight && <MiniFaceRight size={42} />}
+          {moveRight && !moveLeft && <MiniFaceLeft size={42} />}
+          {moveLeft && !moveFinalCenter && <MiniFaceCenter size={42} />}
         </div>
       )}
     </div>
