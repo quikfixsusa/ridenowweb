@@ -45,6 +45,19 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
 
   const [instruction, setInstruction] = useState<string>('Center your face');
 
+  const handleTryAgain = () => {
+    setImage(null);
+    setCheckCenter(false);
+    setCheckRight(false);
+    setCheckLeft(false);
+    setCheckFinalCenter(false);
+    setMoveRight(false);
+    setMoveLeft(false);
+    setMoveCenter(false);
+    setMoveFinalCenter(false);
+    setInstruction('Center your face');
+  };
+
   async function getDriverLicenseImage() {
     const userDoc = await getDoc(doc(db, 'users', userId));
     const userData = userDoc.data();
@@ -284,7 +297,7 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
         </div>
       )}
       {image && (
-        <button className="absolute left-4 top-12" onClick={() => setImage(null)}>
+        <button className="absolute left-4 top-12" onClick={handleTryAgain}>
           <CloseIcon size={24} color="white" />
         </button>
       )}
