@@ -8,7 +8,7 @@ export default function WhatWeOffer() {
           <h2 className="flex flex-row gap-1 text-2xl font-medium md:gap-2 md:text-5xl">
             Discover What we <span className="text-2xl font-black italic text-yellowQuik md:text-5xl">Offer</span>
           </h2>
-          <p className="text-xs text-gray-600 md:text-xl">A wide range of services to make your life easier.</p>
+          <p className="text-xs text-gray-600 md:text-xl">A wide range of trips to make your life easier.</p>
         </div>
         <Cards />
       </div>

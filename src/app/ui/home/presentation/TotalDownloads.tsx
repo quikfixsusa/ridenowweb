@@ -29,7 +29,7 @@ export default function TotalDownloads() {
           className="w-10 rounded-full border-2 border-white md:w-14 md:border-[4px]"
         />
       </div>
-      <span className="text-lg font-semibold md:text-2xl">200K+ Downloads</span>
+      <span className="text-lg font-semibold md:text-2xl">10K+ Downloads</span>
     </div>
   );
 }

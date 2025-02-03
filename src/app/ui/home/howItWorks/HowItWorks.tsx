@@ -10,7 +10,7 @@ export default function HowItWorks() {
         <h2 className="text-center text-3xl text-black md:text-5xl">
           <span className="font-black italic">3 Easy Steps</span>
           <br />
-          to a QuikFix
+          to a RideNow
         </h2>
         <Cards />
       </div>

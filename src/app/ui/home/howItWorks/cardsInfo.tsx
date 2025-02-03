@@ -1,28 +1,26 @@
-import card2Image from '@/app/assets/images/checkout.webp';
-import card3Image from '@/app/assets/images/request-complete.webp';
-import card1Image from '@/app/assets/images/searchServices.webp';
+import card3Image from '@/app/assets/images/ride-safe.webp';
+import card2Image from '@/app/assets/images/select-a-ride.webp';
+import card1Image from '@/app/assets/images/where-you-go.webp';
 
 import { type CardProps } from './Card';
 
 const cardsInfo: CardProps[] = [
   {
-    title: 'Search Services',
+    title: 'Where you going?',
     step: 1,
-    description:
-      'Select the service you need (plumbing, electrical, cleaning, etc.) and specify the details of your request.',
+    description: 'Find the destination where you are going',
     image: card1Image,
   },
   {
-    title: 'Your request is being processed!',
+    title: 'Select a ride!',
     step: 2,
-    description:
-      'Review the details of your request and confirm. We will notify you when we have found the ideal professional for your case.',
+    description: 'Choose the trip that best suits you',
     image: card2Image,
   },
   {
-    title: 'Your problem is already solved',
+    title: 'Ride Safe',
     step: 3,
-    description: 'Our professional will arrive at the agreed time to perform the service. Relax and enjoy the results!',
+    description: 'Wait for your driver and get to your destination',
     image: card3Image,
   },
 ];
