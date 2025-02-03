@@ -1,6 +1,6 @@
-import imageCard1 from '@/app/assets/images/card1.webp';
-import imageCard2 from '@/app/assets/images/card2.webp';
-import imageCard3 from '@/app/assets/images/card3.webp';
+import imageCard1 from '@/app/assets/images/ridenow-card1.webp';
+import imageCard2 from '@/app/assets/images/ridenow-card2.webp';
+import imageCard3 from '@/app/assets/images/ridenow-card3.webp';
 import { StaticImageData } from 'next/image';
 
 export interface Card {
@@ -12,21 +12,21 @@ export interface Card {
 const cardsInfo: Card[] = [
   {
     image: imageCard1,
-    title: 'Instant Solutions!',
+    title: 'Rides tailored to you',
     description:
-      'Forget long waits. With QuikFixs, connect with qualified professionals in minutes and schedule your services at your convenience. Your time is valuable!',
+      "Forget about the stress of transportation. With our app, find the perfect ride for you, whether it's a quick trip around the city or a longer journey. Choose from a variety of vehicles and verified drivers for a comfortable and safe experience.",
   },
   {
     image: imageCard2,
-    title: 'Everything You Need, in One Place',
+    title: 'Your packages to their destination',
     description:
-      'From household chores to auto repairs, our platform offers a wide variety of services. Find the right professional for every need, no matter how big or small.',
+      'Need to send a package or make an urgent delivery? We have a fast and reliable delivery service. Trust our fleet of vans and pickups to transport your items safely and efficiently.',
   },
   {
     image: imageCard3,
-    title: 'Quality and Trust Guaranteed',
+    title: 'No surprises in the fare',
     description:
-      'All our professionals are carefully selected and evaluated to ensure you receive the highest quality service.',
+      'We believe in full transparency. Before confirming your trip or shipment, we will show you the exact price so there are no surprises. In addition, our rates are competitive and fair, so you get the best value for your money.',
   },
 ];
 

@@ -9,7 +9,7 @@ export default function Customers() {
             Customers <span className="text-2xl font-black italic text-yellowQuik md:text-5xl">Stories</span>
           </h2>
           <p className="max-w-[80%] text-center text-xs text-gray-600 md:max-w-[60%] md:text-xl">
-            Discover what satisfied customers have to say about their experience with QuikFixs.
+            Discover what satisfied customers have to say about their experience with RideNow.
           </p>
         </div>
         <Cards />

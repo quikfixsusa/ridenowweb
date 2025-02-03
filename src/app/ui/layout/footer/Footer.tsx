@@ -1,5 +1,6 @@
 'use client';
 import LogoRideNow from '@/app/components/svg/LogoRideNow';
+import Link from 'next/link';
 
 import ButtonsStores from './ButtonsStores';
 import FollowUs from './FollowUs';
@@ -17,12 +18,25 @@ export default function Footer() {
             <FollowUs />
           </div>
           <div className="flex max-w-full flex-col gap-4 md:max-w-[45%]">
-            <h3 className="text-2xl font-bold md:text-4xl">The solution to your problems, in the blink of an eye.</h3>
+            <h3 className="text-2xl font-bold md:text-4xl">Ride anywhere any time.</h3>
             <ButtonsStores />
           </div>
         </div>
-        <div className="h-[1px] w-full bg-black" />
-        <p className="pt-8 text-center text-sm md:text-base">© 2024 Quikfixs. All rights reserved.</p>
+        <div className="h-[0.5px] w-full bg-black" />
+        <div className="flex flex-col items-center justify-center gap-8 pt-8 md:flex-row-reverse">
+          <p className="text-center text-sm md:text-base">© 2025 Ride Now Taxis, Inc.</p>
+          <div className="flex items-center justify-center gap-8">
+            <Link href="/terms" className="text-sm underline md:text-base">
+              Terms
+            </Link>
+            <Link href="/privacy" className="text-sm underline md:text-base">
+              Privacy
+            </Link>
+            <Link href="/cookies" className="text-sm underline md:text-base">
+              Cookies
+            </Link>
+          </div>
+        </div>
       </div>
     </footer>
   );

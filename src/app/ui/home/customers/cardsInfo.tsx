@@ -7,25 +7,27 @@ export interface CardsProps {
   image: StaticImageData;
   review: string;
   name: string;
+  typeUser: string;
 }
 
 const cardsInfo = [
   {
     image: userImage1,
-    review:
-      '"I was so impressed with the quick and efficient service I received from QuikFixs. My sink was leaking and I needed it fixed ASAP. I placed a request and within an hour, a professional was at my door. The problem was fixed in no time and the technician was friendly and knowledgeable. I would definitely recommend QuikFixs to anyone!"',
+    review: `"I'm thrilled with Ridenow! The app is very intuitive and allows me to request rides quickly and easily. Plus, I love that I can see the driver and vehicle information before confirming the trip. I feel very safe traveling with Ridenow!"`,
     name: 'DAVID LEE',
+    typeUser: 'Passanger',
   },
   {
     image: userImage2,
-    review:
-      '"QuikFixs saved my day! My air conditioning went out on the hottest day of the year. I was so relieved when I found QuikFixs and was able to book a repair right away. The technician was punctual and got my AC working again in no time. I am so grateful for their fast and reliable service."',
+    review: `"Ridenow is my new favorite travel app! It's so easy to use, the drivers are friendly and professional, and the prices are very competitive. I always find a ride quickly and safely, no matter the time or place. I highly recommend it!"`,
     name: 'SARAH KIM',
+    typeUser: 'Passanger',
   },
   {
     image: userImage3,
     review: `"I've used QuikFixs for a few different services now, and I've always been happy with the results. The professionals they send are always friendly, efficient, and knowledgeable. I love that I can book an appointment online and have someone come out the same day. It's so convenient!"`,
     name: 'LUIS GARCIA',
+    typeUser: 'Driver',
   },
 ];
 
