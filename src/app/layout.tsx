@@ -19,7 +19,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const isRuteNotLayout = pathname.startsWith('/auth') || pathname.startsWith('/user') || pathname.startsWith('/face');
+  const isRuteNotLayout =
+    pathname.startsWith('/auth') ||
+    pathname.startsWith('/user') ||
+    pathname.startsWith('/face') ||
+    pathname.startsWith('/helpbot');
   return (
     <html lang="en">
       <head>
