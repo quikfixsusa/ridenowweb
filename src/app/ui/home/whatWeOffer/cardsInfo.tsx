@@ -18,7 +18,7 @@ const cardsInfo: Card[] = [
   },
   {
     image: imageCard2,
-    title: 'Your packages to their destination',
+    title: 'Send Packages!',
     description:
       'Need to send a package or make an urgent delivery? We have a fast and reliable delivery service. Trust our fleet of vans and pickups to transport your items safely and efficiently.',
   },

@@ -29,20 +29,20 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/user/reviewer', request.url));
     }
     // Si existe el token y el rol es customer, redirigir al customer
-    if (pathName.startsWith('/auth/login') && payload.userType === 'customer') {
-      return NextResponse.redirect(new URL('/user/customer', request.url));
+    if (pathName.startsWith('/auth/login') && payload.userType === 'passenger') {
+      return NextResponse.redirect(new URL('/user/passenger', request.url));
     }
     // Si el usuario es contractor y quiere acceder a customer o reviewer, redirigir a la ruta contractor
     if (
-      (pathName.startsWith('/user/reviewer') || request.nextUrl.pathname.startsWith('/user/customer')) &&
-      payload.userType === 'contractor'
+      (pathName.startsWith('/user/reviewer') || request.nextUrl.pathname.startsWith('/user/passenger')) &&
+      payload.userType === 'driver'
     ) {
-      return NextResponse.redirect(new URL('/user/contractor', request.url));
+      return NextResponse.redirect(new URL('/user/driver', request.url));
     }
 
     // Si el usuario es reviewer y quiere acceder a la ruta contractor o customer, redirigir a la ruta reviewer
     if (
-      (pathName.startsWith('/user/contractor') || request.nextUrl.pathname.startsWith('/user/customer')) &&
+      (pathName.startsWith('/user/driver') || request.nextUrl.pathname.startsWith('/user/passenger')) &&
       payload.userType === 'reviewer'
     ) {
       return NextResponse.redirect(new URL('/user/reviewer', request.url));
@@ -50,10 +50,10 @@ export async function middleware(request: NextRequest) {
 
     // Si el usuario es customer y quiere acceder a la ruta contractor o reviewer, redirigir a la ruta customer
     if (
-      (pathName.startsWith('/user/contractor') || request.nextUrl.pathname.startsWith('/user/reviewer')) &&
-      payload.userType === 'customer'
+      (pathName.startsWith('/user/driver') || request.nextUrl.pathname.startsWith('/user/reviewer')) &&
+      payload.userType === 'passenger'
     ) {
-      return NextResponse.redirect(new URL('/user/customer', request.url));
+      return NextResponse.redirect(new URL('/user/passenger', request.url));
     }
     return NextResponse.next();
   } catch (error) {

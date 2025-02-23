@@ -6,7 +6,7 @@ import Link from 'next/link';
 export default function RightButton() {
   const { openSidePanel, setOpenSidePanel } = useAppContext();
   return (
-    <div>
+    <div className="flex flex-1 justify-end">
       <Link
         href="/auth/login"
         className="hidden items-center justify-center rounded-lg bg-blueQuik px-16 py-2 font-semibold text-white transition-all duration-150 hover:bg-blue-700 xl:flex"

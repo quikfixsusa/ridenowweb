@@ -5,7 +5,7 @@ export default function Logo() {
   return (
     <div>
       <div className="hidden xl:flex">
-        <LogoRideNow size={48} />
+        <LogoRideNow size={40} />
       </div>
       <div className="xl:hidden">
         <IconRideNow size={40} />

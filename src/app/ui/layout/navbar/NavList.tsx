@@ -3,7 +3,7 @@ import Link from 'next/link';
 export default function NavList() {
   const linkStyle = 'font-medium text-black transition-all duration-150 hover:text-blue-600';
   return (
-    <nav className="hidden xl:flex">
+    <nav className="hidden flex-3 xl:flex">
       <ul className="flex gap-8">
         <Link href="#what-we-offer" className={linkStyle}>
           What we offer

@@ -2,8 +2,8 @@ import { Dispatch, SetStateAction } from 'react';
 
 const buttonsData = [
   { label: 'Reviewer', value: 'reviewer' },
-  { label: 'Customer', value: 'customer' },
-  { label: 'Contractor', value: 'contractor' },
+  { label: 'Passenger', value: 'passenger' },
+  { label: 'Driver', value: 'driver' },
 ];
 
 export default function UserTypeButtons({
