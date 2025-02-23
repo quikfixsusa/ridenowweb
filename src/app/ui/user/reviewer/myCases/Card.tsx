@@ -61,10 +61,10 @@ export default function Card({ userData }: { userData: User }) {
         <p className="text-sm font-medium text-gray-500">Requirements:</p>
       </div>
       <div className="flex w-full">
-        {userData.requirements.map((requirement, index) => (
+        {[...userData.requirements, ...userData.vehicleRequirements].map((requirement, index) => (
           <div
             key={index}
-            className={`h-4 ${index === 0 ? 'rounded-l-lg' : ''} ${index === userData.requirements.length - 1 ? 'rounded-r-lg' : ''} w-full border border-white ${getColorByStatus(requirement.status)}`}
+            className={`h-4 ${index === 0 ? 'rounded-l-lg' : ''} ${index === [...userData.requirements, ...userData.vehicleRequirements].length - 1 ? 'rounded-r-lg' : ''} w-full border border-white ${getColorByStatus(requirement.status)}`}
           />
         ))}
       </div>

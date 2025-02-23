@@ -11,7 +11,10 @@ export default function Presentation() {
       <div className="flex w-full max-w-[1440px] flex-row items-center justify-center gap-10 px-4 md:px-10">
         <div className="flex flex-col items-start justify-start gap-8 py-8">
           <BetaAvailable />
-          <h3 className="text-3xl font-bold md:text-5xl">Ride anywhere any time!</h3>
+          <div>
+            <h3 className="text-3xl font-light md:text-5xl">Travel and Drive</h3>
+            <h3 className="text-3xl font-bold md:text-5xl">Ride anywhere any time!</h3>
+          </div>
           <span className="text-base font-medium md:text-xl">
             Whether you&apos;re a passenger looking for a ride or a business needing to transport goods, our app
             connects you with the best drivers in your area.

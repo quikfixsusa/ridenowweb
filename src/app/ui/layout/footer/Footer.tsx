@@ -18,13 +18,16 @@ export default function Footer() {
             <FollowUs />
           </div>
           <div className="flex max-w-full flex-col gap-4 md:max-w-[45%]">
-            <h3 className="text-2xl font-bold md:text-4xl">Ride anywhere any time.</h3>
+            <div>
+              <h3 className="text-2xl font-light md:text-4xl">Travel and Drive</h3>
+              <h3 className="text-2xl font-bold md:text-4xl">Ride anywhere any time.</h3>
+            </div>
             <ButtonsStores />
           </div>
         </div>
         <div className="h-[0.5px] w-full bg-black" />
         <div className="flex flex-col items-center justify-center gap-8 pt-8 md:flex-row-reverse">
-          <p className="text-center text-sm md:text-base">© 2025 Ride Now Taxis, Inc.</p>
+          <p className="text-center text-sm md:text-base">© 2025 RIDE NOW TAXIS, Inc.</p>
           <div className="flex items-center justify-center gap-8">
             <Link href="/terms" className="text-sm underline md:text-base">
               Terms

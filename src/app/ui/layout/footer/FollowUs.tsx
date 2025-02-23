@@ -1,17 +1,19 @@
-import FacebookLogo from '@/app/components/svg/FacebookLogo';
-import InstagramLogo from '@/app/components/svg/InstagramLogo';
-import TiktokLogo from '@/app/components/svg/TiktokLogo';
-import YoutubeLogo from '@/app/components/svg/YoutubeLogo';
+import Facebook from '@/app/components/svg/socialMedia/Facebook';
+import Instagram from '@/app/components/svg/socialMedia/Instagram';
+import TikTok from '@/app/components/svg/socialMedia/TikTok';
+import Youtube from '@/app/components/svg/socialMedia/Youtube';
+import Link from 'next/link';
 import { ReactElement } from 'react';
 
 function ButtonSocialMedia({ icon, url }: { icon: ReactElement; url: string }) {
   return (
-    <button
-      onClick={() => window.open(url)}
+    <Link
+      href={url}
+      target="_blank"
       className="rounded-full border-[0.75px] border-gray-300 bg-white p-3 transition-all duration-150 hover:scale-105"
     >
       {icon}
-    </button>
+    </Link>
   );
 }
 
@@ -20,10 +22,10 @@ export default function FollowUs() {
     <div className="flex flex-col gap-2">
       <p className="text-xl font-semibold text-black">Follow Us!</p>
       <div className="flex gap-3">
-        <ButtonSocialMedia icon={<FacebookLogo size={28} />} url="https://facebook.com" />
-        <ButtonSocialMedia icon={<InstagramLogo size={28} />} url="https://instagram.com" />
-        <ButtonSocialMedia icon={<TiktokLogo size={28} />} url="https://tiktok.com" />
-        <ButtonSocialMedia icon={<YoutubeLogo size={28} />} url="https://youtube.com" />
+        <ButtonSocialMedia icon={<Facebook size={28} color="#000" />} url="https://facebook.com/@ridenowtaxis" />
+        <ButtonSocialMedia icon={<Instagram size={28} color="#000" />} url="https://instagram.com/ridenowtaxis" />
+        <ButtonSocialMedia icon={<TikTok size={28} color="#000" />} url="https://tiktok.com/@ridenowtaxis" />
+        <ButtonSocialMedia icon={<Youtube size={28} color="#000" />} url="https://youtube.com/@ridenowtaxis" />
       </div>
     </div>
   );
