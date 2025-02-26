@@ -12,9 +12,13 @@ export default function ButtonsStores() {
       >
         <ButtonGooglePlay />
       </Link>
-      <button className="h-12 transition-all duration-150 hover:scale-105 md:h-16">
+      <Link
+        href={'https://apps.apple.com/us/app/id6742415073'}
+        target="_blank"
+        className="h-12 transition-all duration-150 hover:scale-105 md:h-16"
+      >
         <ButtonAppleStore />
-      </button>
+      </Link>
     </div>
   );
 }
