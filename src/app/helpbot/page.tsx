@@ -29,11 +29,12 @@ export default function page() {
           __html: `
             <df-messenger
               project-id="ridenow-f2d1d"
-              agent-id="8d1c5375-4c6e-4757-919e-0e4529a0bfc7"
+              agent-id="e24941a8-5348-43c2-afb3-8860ae40e230"
               language-code="en"
-              max-query-length="-1"
-            >
-              <df-messenger-chat chat-title="Ride Now Support"></df-messenger-chat>
+              max-query-length="-1">
+              <df-messenger-chat
+                chat-title="Ride Now Support">
+              </df-messenger-chat>
             </df-messenger>`,
         }}
       />
