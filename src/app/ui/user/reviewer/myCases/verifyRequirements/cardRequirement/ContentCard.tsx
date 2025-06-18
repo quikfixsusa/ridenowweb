@@ -8,14 +8,25 @@ interface Props {
   note: string;
   link: string;
   status: 'reception' | 'inReview' | 'edit' | 'approved';
-  id: string;
   title: string;
   format: string;
   value?: string;
   vehicle?: boolean;
+  driverId: string;
+  reviewId: string;
 }
 
-export default function ContentCard({ verificationSteps, note, link, status, id, title, value, vehicle }: Props) {
+export default function ContentCard({
+  verificationSteps,
+  note,
+  link,
+  status,
+  driverId,
+  reviewId,
+  title,
+  value,
+  vehicle,
+}: Props) {
   function formatText(text: string) {
     return text.split('*').map((line, index) => (
       <p className="text-gray-600" key={index}>
@@ -83,8 +94,8 @@ export default function ContentCard({ verificationSteps, note, link, status, id,
             View Attached Document
           </Link>
         )}
-        {!vehicle && <Buttons status={status} id={id} title={title} />}
-        {vehicle && <ButtonsVehicle status={status} id={id} title={title} />}
+        {!vehicle && <Buttons status={status} driverId={driverId} reviewId={reviewId} title={title} />}
+        {vehicle && <ButtonsVehicle status={status} driverId={driverId} reviewId={reviewId} title={title} />}
       </div>
     </div>
   );

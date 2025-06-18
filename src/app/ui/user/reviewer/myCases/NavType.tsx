@@ -7,7 +7,7 @@ import TypeButton from '../openCases/TypeButton';
 
 const buttonsData = [
   { name: 'In Progress', icon: <InProgressIcon size={18} />, value: 'inprogress' },
-  { name: 'Verified', icon: <CheckIcon size={18} />, value: 'verified' },
+  { name: 'Completed', icon: <CheckIcon size={18} />, value: 'verified' },
   // Add more buttons as needed
 ];
 

@@ -1,15 +1,15 @@
 'use client';
 import { createContext, Dispatch, SetStateAction, useContext, useState } from 'react';
 
-import { User } from '../definitions';
+import { Review, User } from '../definitions';
 
 interface homeTypes {
   user: User | null;
   setUser: Dispatch<any>;
   loadingUser: boolean;
   setLoadingUser: Dispatch<SetStateAction<boolean>>;
-  inProgressUsers: User[];
-  setInProgressUsers: Dispatch<SetStateAction<User[]>>;
+  inProgressReviews: Review[];
+  setInProgressReviews: Dispatch<SetStateAction<Review[]>>;
   loadingInProgress: boolean;
   setLoadingInProgress: Dispatch<SetStateAction<boolean>>;
 }
@@ -19,8 +19,8 @@ const ReviewerContext = createContext<homeTypes>({
   setUser: () => {},
   setLoadingUser: () => {},
   loadingUser: true,
-  inProgressUsers: [],
-  setInProgressUsers: () => {},
+  inProgressReviews: [],
+  setInProgressReviews: () => {},
   loadingInProgress: true,
   setLoadingInProgress: () => {},
 });
@@ -28,7 +28,7 @@ const ReviewerContext = createContext<homeTypes>({
 export function ReviewerWrapper({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
-  const [inProgressUsers, setInProgressUsers] = useState<User[]>([]);
+  const [inProgressReviews, setInProgressReviews] = useState<Review[]>([]);
   const [loadingInProgress, setLoadingInProgress] = useState(true);
   return (
     <ReviewerContext.Provider
@@ -37,8 +37,8 @@ export function ReviewerWrapper({ children }: { children: React.ReactNode }) {
         setUser,
         loadingUser,
         setLoadingUser,
-        inProgressUsers,
-        setInProgressUsers,
+        inProgressReviews,
+        setInProgressReviews,
         loadingInProgress,
         setLoadingInProgress,
       }}

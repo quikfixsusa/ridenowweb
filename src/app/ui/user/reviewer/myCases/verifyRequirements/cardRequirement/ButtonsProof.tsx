@@ -1,20 +1,16 @@
 import { db } from '@/app/lib/firebase';
+import dayjs from 'dayjs';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { getStorage, ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { useRouter } from 'next/navigation';
-import * as pdfjsLib from 'pdfjs-dist';
 import Swal from 'sweetalert2';
 
 interface Props {
-  status: 'reception' | 'inReview' | 'edit' | 'approved';
+  status: string;
   driverId: string;
   reviewId: string;
-  title: string;
 }
 
-export default function Buttons({ status, driverId, reviewId, title }: Props) {
-  // Configurar el worker
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
+export default function ButtonsProof({ status, driverId, reviewId }: Props) {
   const router = useRouter();
 
   const verifyRequirement = async () => {
@@ -28,55 +24,20 @@ export default function Buttons({ status, driverId, reviewId, title }: Props) {
 
     const user = userDoc.data();
 
-    const requirement = user.requirements.findIndex((req: any) => req.title === title);
-    user.requirements[requirement] = {
-      ...user.requirements[requirement],
-      status: 'approved',
-    };
+    const insurance = user.insurance;
+    insurance.monthlyChecks[0].status = 'approved';
 
-    const isInReview = user.requirements.some((req: any) => req.status !== 'approved');
-
-    if (title === 'Driver Licence') {
-      const driverLicensePdf = user.requirements[0].link;
-
-      // Convert PDF to image and upload to Firebase Storage
-      const imageUrl = await convertPdfToImageAndUpload(driverLicensePdf);
-
-      user.requirements[0].image = imageUrl;
+    if (insurance.lastVerifiedAt !== null) {
+      insurance.dueDate = dayjs(insurance.dueDate.seconds * 1000)
+        .add(1, 'month')
+        .startOf('day')
+        .toDate();
     }
+    insurance.lastVerifiedAt = new Date();
 
-    await updateDoc(userRef, { requirements: user.requirements, requirementsInReview: isInReview });
+    await updateDoc(userRef, { insurance });
     await updateDoc(reviewRef, { status: 'completed', reviewedAt: new Date() });
     router.back();
-  };
-
-  const convertPdfToImageAndUpload = async (pdfUrl: string) => {
-    const response = await fetch(pdfUrl);
-    const arrayBuffer = await response.arrayBuffer();
-    console.log(arrayBuffer);
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    console.log(pdf.getData());
-    const page = await pdf.getPage(1);
-    const viewport = page.getViewport({ scale: 1.0 });
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-
-    if (!context) {
-      throw new Error('Failed to get canvas context');
-    }
-
-    canvas.height = viewport.height;
-    canvas.width = viewport.width;
-
-    await page.render({ canvasContext: context, viewport: viewport }).promise;
-    const dataUrl = canvas.toDataURL('image/jpeg');
-
-    // Upload image to Firebase Storage
-    const storage = getStorage();
-    const storageRef = ref(storage, `requirements/${driverId}/Driver License.jpg`);
-    await uploadString(storageRef, dataUrl, 'data_url');
-    const downloadUrl = await getDownloadURL(storageRef);
-    return downloadUrl;
   };
 
   const rejectRequirement = async (note: string) => {
@@ -87,14 +48,11 @@ export default function Buttons({ status, driverId, reviewId, title }: Props) {
       throw new Error('User not found');
     }
     const user = userDoc.data();
-    const requirement = user.requirements.findIndex((req: any) => req.title === title);
-    user.requirements[requirement] = {
-      ...user.requirements[requirement],
-      status: 'edit',
-      note: note,
-    };
+    const insurance = user.insurance;
+    insurance.monthlyChecks[0].status = 'edit';
+    insurance.monthlyChecks[0].note = note;
 
-    await updateDoc(userRef, { requirements: user.requirements });
+    await updateDoc(userRef, { insurance });
     await updateDoc(reviewRef, { status: 'completed', reviewedAt: new Date() });
     router.back();
   };

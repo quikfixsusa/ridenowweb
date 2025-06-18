@@ -1,9 +1,9 @@
 'use client';
 import UserIcon from '@/app/components/svg/icons/UserIcon';
-import { User } from '@/app/lib/definitions';
+import { Review } from '@/app/lib/definitions';
 import Link from 'next/link';
 
-export default function Card({ userData }: { userData: User }) {
+export default function Card({ reviewData }: { reviewData: Review }) {
   function parseDate({ seconds, nanoseconds }: { seconds: number; nanoseconds: number }) {
     // Convierte seconds a milisegundos y nanoseconds a milisegundos
     const milliseconds = seconds * 1000 + nanoseconds / 1000000;
@@ -19,62 +19,33 @@ export default function Card({ userData }: { userData: User }) {
     });
   }
 
-  function parseUserType(userType: string) {
-    if (userType === 'admin') return 'Admin';
-    if (userType === 'reviewer') return 'Reviewer';
-    if (userType === 'customer') return 'Customer';
-    if (userType === 'contractor') return 'Contractor';
-    if (userType === 'driver') return 'Driver';
-  }
-
-  function getColorByStatus(status: string) {
-    if (status === 'approved') return 'bg-green-500 text-white';
-    if (status === 'edit') return 'bg-orange-500 text-white';
-    if (status === 'inReview') return 'bg-blueQuik text-white';
-    if (status === 'reception') return 'bg-yellowQuik text-black';
-    return 'bg-gray-400';
-  }
-
   return (
     <div className="flex flex-2 flex-col gap-3 rounded-xl border border-gray-300 p-4 lg:flex-3">
       <div className="flex w-full items-center justify-between gap-2">
-        <p className="text-sm font-medium text-gray-600">{parseDate(userData.createdAt)}</p>
-        <p className="rounded-sm bg-yellowQuik px-4 text-sm text-black">{parseUserType(userData.userType)}</p>
+        <p className="text-sm font-medium text-gray-600">{parseDate(reviewData.createdAt)}</p>
+        <p className="rounded-sm bg-yellowQuik px-4 text-sm text-black">{reviewData.titleRequirement}</p>
       </div>
       <div className="flex items-center gap-3">
-        {!userData.image && (
-          <div className="rounded-full bg-gray-200 p-[13px]">
-            <UserIcon size={18} color="gray" />
-          </div>
-        )}
-        {userData.image && (
-          <img alt={userData.userName} width={44} height={44} className="h-11 w-11 rounded-full" src={userData.image} />
-        )}
+        <div className="rounded-full bg-gray-200 p-[13px]">
+          <UserIcon size={18} color="gray" />
+        </div>
         <div>
-          <p className="font-semibold">
-            {userData.firstName ? `${userData.firstName} ${userData.lastName}` : userData.businessName}
-          </p>
-          <p className="text-xs text-gray-600">{userData.email}</p>
+          <p className="font-semibold">{reviewData.driverName}</p>
+          <p className="text-xs text-gray-600">{reviewData.driverId}</p>
         </div>
       </div>
-      <div className="flex w-full items-center justify-between">
-        <p className="text-sm font-medium text-gray-500">Requirements:</p>
-      </div>
-      <div className="flex w-full">
-        {[...userData.requirements, ...userData.vehicleRequirements].map((requirement, index) => (
-          <div
-            key={index}
-            className={`h-4 ${index === 0 ? 'rounded-l-lg' : ''} ${index === [...userData.requirements, ...userData.vehicleRequirements].length - 1 ? 'rounded-r-lg' : ''} w-full border border-white ${getColorByStatus(requirement.status)}`}
-          />
-        ))}
-      </div>
       <hr />
-      <Link
-        href={`/user/reviewer/mycases/${userData.id}`}
-        className="w-full rounded-md bg-blueQuik py-2 text-center font-medium text-white transition-all duration-150 hover:bg-blue-700"
-      >
-        Verify Requirements
-      </Link>
+      {reviewData.status !== 'completed' && (
+        <Link
+          href={`/user/reviewer/mycases/${reviewData.id}`}
+          className="w-full rounded-md bg-blueQuik py-2 text-center font-medium text-white transition-all duration-150 hover:bg-blue-700"
+        >
+          Verify Requirement
+        </Link>
+      )}
+      {reviewData.status === 'completed' && (
+        <div className="w-full rounded-md bg-green-600 py-2 text-center font-medium text-white">Completed</div>
+      )}
     </div>
   );
 }

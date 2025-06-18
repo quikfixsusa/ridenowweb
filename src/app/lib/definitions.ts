@@ -41,6 +41,8 @@ export interface User {
   vehicleInReview: boolean;
   requirements: Requirement[];
   requirementsInReview: boolean;
+  insurance: Insurance;
+  insuranceInReview: boolean;
   phoneNumber: string;
   businessName: string;
   notificationToken: string;
@@ -48,6 +50,46 @@ export interface User {
   email: string;
   stripeConnectAccountId: string;
   status: string;
+}
+
+export interface Insurance {
+  type: 'insurance';
+  documentUrl: string;
+  dueDate: CreatedAt;
+  effectiveDate: CreatedAt;
+  expiryDate: CreatedAt;
+  includesRideshare: boolean;
+  insurerName: string;
+  lastVerifiedAt: CreatedAt | null;
+  monthlyChecks: monthlyCheck[];
+  policyNumber: string;
+  status: 'submitted' | 'edit' | 'approved' | 'inReview';
+  submittedAt: CreatedAt;
+  verifiedByAdminId: string | null;
+  note: string;
+}
+
+export interface monthlyCheck {
+  documentUrl: string;
+  dueDate: CreatedAt;
+  status: string;
+  submittedAt: CreatedAt;
+  type: 'receipt' | 'screenshot' | 'insurer_letter';
+  verifiedByAdminId: string | null;
+}
+
+export interface Review {
+  id: string;
+  createdAt: CreatedAt;
+  driverId: string;
+  driverName: string;
+  fileUrl: string;
+  requirementType: string;
+  reviewedAt: CreatedAt | null;
+  reviewerId: string | null;
+  status: 'submitted' | 'inReview' | 'edit' | 'rejected' | 'completed';
+  takenAt: CreatedAt | null;
+  titleRequirement: string;
 }
 
 export interface TimeUntilOfferServices {
@@ -70,6 +112,8 @@ export interface Vehicle {
 }
 
 export interface Requirement {
+  type: 'requirement';
+  id: string;
   title: string;
   description: string;
   value?: string;

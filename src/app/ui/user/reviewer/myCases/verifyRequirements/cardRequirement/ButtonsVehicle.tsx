@@ -1,17 +1,23 @@
 import { db } from '@/app/lib/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
 
 interface Props {
   status: 'reception' | 'inReview' | 'edit' | 'approved';
-  id: string;
+  driverId: string;
+  reviewId: string;
   title: string;
 }
 
-export default function ButtonsVehicle({ status, id, title }: Props) {
+export default function ButtonsVehicle({ status, driverId, reviewId, title }: Props) {
+  const router = useRouter();
+
   const verifyRequirement = async () => {
-    const userRef = doc(db, 'users', id);
+    const userRef = doc(db, 'users', driverId);
+    const reviewRef = doc(db, 'driverReviews', reviewId);
     const userDoc = await getDoc(userRef);
+
     if (!userDoc.exists()) {
       throw new Error('User not found');
     }
@@ -25,11 +31,15 @@ export default function ButtonsVehicle({ status, id, title }: Props) {
     const isInReview = user.vehicleRequirements.some((req: any) => req.status !== 'approved');
 
     await updateDoc(userRef, { vehicleRequirements: user.vehicleRequirements, vehicleInReview: isInReview });
+    await updateDoc(reviewRef, { status: 'completed', reviewedAt: new Date() });
+    router.back();
   };
 
   const rejectRequirement = async (note: string) => {
-    const userRef = doc(db, 'users', id);
+    const userRef = doc(db, 'users', driverId);
+    const reviewRef = doc(db, 'driverReviews', reviewId);
     const userDoc = await getDoc(userRef);
+
     if (!userDoc.exists()) {
       throw new Error('User not found');
     }
@@ -42,6 +52,8 @@ export default function ButtonsVehicle({ status, id, title }: Props) {
     };
 
     await updateDoc(userRef, { vehicleRequirements: user.vehicleRequirements });
+    await updateDoc(reviewRef, { status: 'completed', reviewedAt: new Date() });
+    router.back();
   };
 
   const handleApprove = async () => {
