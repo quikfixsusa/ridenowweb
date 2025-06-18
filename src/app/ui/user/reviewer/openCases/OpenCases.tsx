@@ -11,7 +11,7 @@ import NavTypeCases from './NavTypeCases';
 
 export default function OpenCasesView() {
   const { user } = useReviewerContext();
-  const [usersData, setUsersData] = useState<any[]>([]);
+  const [reviewsData, setReviewsData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
 
@@ -29,12 +29,12 @@ export default function OpenCasesView() {
 
   useEffect(() => {
     if (user) {
-      const unsub = onSnapshot(query(collection(db, 'users'), where('reviewer', '==', null)), (docs) => {
+      const unsub = onSnapshot(query(collection(db, 'driverReviews'), where('reviewerId', '==', null)), (docs) => {
         if (docs.size > 0) {
           const data = docs.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-          setUsersData(sortByCreatedAt(data));
+          setReviewsData(sortByCreatedAt(data));
         } else {
-          setUsersData([]);
+          setReviewsData([]);
         }
         setLoading(false);
       });
@@ -47,8 +47,8 @@ export default function OpenCasesView() {
         title="Open Cases"
         description="accepts requests from contractors to verify their requirements"
       />
-      <NavTypeCases count={usersData.length} />
-      <Cases usersData={usersData.slice((page - 1) * 6, (page - 1) * 6 + 6)} loading={loading} />
+      <NavTypeCases count={reviewsData.length} />
+      <Cases reviewsData={reviewsData.slice((page - 1) * 6, (page - 1) * 6 + 6)} loading={loading} />
     </div>
   );
 }

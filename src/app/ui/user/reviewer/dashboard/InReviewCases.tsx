@@ -1,14 +1,14 @@
 import AngleRightIcon from '@/app/components/svg/icons/AngleRightIcon';
 import { useReviewerContext } from '@/app/lib/context/ReviewerContext';
-import { User } from '@/app/lib/definitions';
+import { Review } from '@/app/lib/definitions';
 import Link from 'next/link';
 
 import Cards from '../myCases/Cards';
 
 export default function InReviewCases() {
-  const { inProgressUsers } = useReviewerContext();
+  const { inProgressReviews } = useReviewerContext();
 
-  function sortByCreatedAt(arr: User[]) {
+  function sortByCreatedAt(arr: Review[]) {
     return arr.sort((a, b) => {
       const dateA = a.createdAt.seconds * 1000 + a.createdAt.nanoseconds / 1000000;
       const dateB = b.createdAt.seconds * 1000 + b.createdAt.nanoseconds / 1000000;
@@ -18,12 +18,8 @@ export default function InReviewCases() {
   }
 
   const getUsersWithRequirementsInReview = () => {
-    const inReviewUsers = inProgressUsers.filter(
-      (user) =>
-        user.requirements.some((req) => req.status === 'inReview') ||
-        user.vehicleRequirements.some((req) => req.status === 'inReview'),
-    );
-    return sortByCreatedAt(inReviewUsers).slice(0, 2);
+    const reviewsPending = inProgressReviews.filter((review) => review.status !== 'completed');
+    return sortByCreatedAt(reviewsPending).slice(0, 2);
   };
   return (
     <div className="flex w-full flex-col gap-4">
@@ -37,7 +33,7 @@ export default function InReviewCases() {
           <AngleRightIcon size={12} />
         </Link>
       </div>
-      <Cards users={getUsersWithRequirementsInReview()} home={true} />
+      <Cards reviews={getUsersWithRequirementsInReview()} home={true} />
     </div>
   );
 }

@@ -5,7 +5,15 @@ import { useState } from 'react';
 import ContentCard from './ContentCard';
 import Header from './Header';
 
-export default function CardRequirement({ data, id, vehicle }: { data: Requirement; id: string; vehicle?: boolean }) {
+interface CardRequirementProps {
+  data: Requirement;
+  reviewId: string;
+  driverId: string;
+  vehicle?: boolean;
+  insurance?: boolean;
+}
+
+export default function CardRequirement({ data, driverId, reviewId, vehicle }: CardRequirementProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -21,7 +29,8 @@ export default function CardRequirement({ data, id, vehicle }: { data: Requireme
           link={data.link}
           note={data.note}
           title={data.title}
-          id={id}
+          driverId={driverId}
+          reviewId={reviewId}
         />
       )}
     </div>

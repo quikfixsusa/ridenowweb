@@ -9,7 +9,7 @@ import Header from './Header';
 
 export default function SidePanel() {
   const [isOpen, setIsOpen] = useState(true);
-  const { setUser, setLoadingUser, user, setInProgressUsers, setLoadingInProgress } = useReviewerContext();
+  const { setUser, setLoadingUser, user, setInProgressReviews, setLoadingInProgress } = useReviewerContext();
 
   useEffect(() => {
     axios
@@ -25,14 +25,14 @@ export default function SidePanel() {
 
   useEffect(() => {
     if (user) {
-      const q = query(collection(db, 'users'), where('reviewer', '==', user.id));
+      const q = query(collection(db, 'driverReviews'), where('reviewerId', '==', user.id));
 
       const unsub = onSnapshot(q, (docs) => {
         if (docs.size > 0) {
           const data: any[] = docs.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-          setInProgressUsers(data);
+          setInProgressReviews(data);
         } else {
-          setInProgressUsers([]);
+          setInProgressReviews([]);
         }
         setLoadingInProgress(false);
       });
