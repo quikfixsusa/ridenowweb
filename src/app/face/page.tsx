@@ -1,6 +1,5 @@
 'use client';
 
-import * as faceapi from 'face-api.js';
 import './face.css';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
@@ -19,6 +18,7 @@ import VerticalFaceForward from '../components/svg/verifyIdentity/VerticalFaceFo
 import VerticalFaceLeft from '../components/svg/verifyIdentity/VerticalFaceLeft';
 import VerticalFaceRight from '../components/svg/verifyIdentity/VerticalFaceRight';
 import { db } from '../lib/firebase';
+import { FaceLandmarks68 } from 'face-api.js';
 
 export default function FacePage({ searchParams }: { searchParams: { userId: string } }) {
   const userId = searchParams.userId;
@@ -67,10 +67,10 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
   }
 
   const loadModels = async () => {
+    const faceapi = await import('face-api.js');
     await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
     await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
     await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
-    await faceapi.nets.ssdMobilenetv1.loadFromUri('/models'); // Load SsdMobilenetv1 model
   };
 
   const handleCap = () => {
@@ -88,14 +88,21 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
   };
 
   const compareFaces = async () => {
+    const faceapi = await import('face-api.js');
     if (image) {
       setLoading(true);
       try {
         const img1 = await faceapi.fetchImage(image);
         const img2 = await faceapi.fetchImage(driverLicenseImage);
 
-        const detections1 = await faceapi.detectSingleFace(img1).withFaceLandmarks().withFaceDescriptor();
-        const detections2 = await faceapi.detectSingleFace(img2).withFaceLandmarks().withFaceDescriptor();
+        const detections1 = await faceapi
+          .detectSingleFace(img1, new faceapi.TinyFaceDetectorOptions())
+          .withFaceLandmarks()
+          .withFaceDescriptor();
+        const detections2 = await faceapi
+          .detectSingleFace(img2, new faceapi.TinyFaceDetectorOptions())
+          .withFaceLandmarks()
+          .withFaceDescriptor();
 
         if (detections1 && detections2) {
           const distance = faceapi.euclideanDistance(detections1.descriptor, detections2.descriptor);
@@ -122,7 +129,7 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
     }
   };
 
-  const isFaceForward = (landmarks: faceapi.FaceLandmarks68) => {
+  const isFaceForward = (landmarks: FaceLandmarks68) => {
     const leftEye = landmarks.getLeftEye();
     const rightEye = landmarks.getRightEye();
     const nose = landmarks.getNose();
@@ -133,7 +140,7 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
     return noseToEyeDistance < eyeDistance * 0.2; // Adjust this threshold as needed
   };
 
-  const isFaceLeftProfile = (landmarks: faceapi.FaceLandmarks68) => {
+  const isFaceLeftProfile = (landmarks: FaceLandmarks68) => {
     const leftEye = landmarks.getLeftEye();
     const rightEye = landmarks.getRightEye();
     const nose = landmarks.getNose();
@@ -145,7 +152,7 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
     return noseToRightEyeDistance > eyeDistance * 0.6; // Ajustar el umbral si es necesario
   };
 
-  const isFaceRightProfile = (landmarks: faceapi.FaceLandmarks68) => {
+  const isFaceRightProfile = (landmarks: FaceLandmarks68) => {
     const leftEye = landmarks.getLeftEye();
     const rightEye = landmarks.getRightEye();
     const nose = landmarks.getNose();
@@ -158,6 +165,7 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
   };
 
   const detectMovement = async (direction: 'left' | 'right' | 'center' | 'finalCenter') => {
+    const faceapi = await import('face-api.js');
     return new Promise<boolean>(async (resolve) => {
       const interval = setInterval(async () => {
         if (webcamRef.current && webcamRef.current.video) {
