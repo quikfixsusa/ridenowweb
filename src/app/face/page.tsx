@@ -1,6 +1,7 @@
 'use client';
 
 import './face.css';
+import { FaceLandmarks68 } from 'face-api.js';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import React, { useRef, useEffect, useState } from 'react';
@@ -18,7 +19,6 @@ import VerticalFaceForward from '../components/svg/verifyIdentity/VerticalFaceFo
 import VerticalFaceLeft from '../components/svg/verifyIdentity/VerticalFaceLeft';
 import VerticalFaceRight from '../components/svg/verifyIdentity/VerticalFaceRight';
 import { db } from '../lib/firebase';
-import { FaceLandmarks68 } from 'face-api.js';
 
 export default function FacePage({ searchParams }: { searchParams: { userId: string } }) {
   const userId = searchParams.userId;
