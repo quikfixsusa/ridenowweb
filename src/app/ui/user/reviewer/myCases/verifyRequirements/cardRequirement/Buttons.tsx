@@ -17,7 +17,7 @@ export default function Buttons({ status, driverId, reviewId, title }: Props) {
   pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
   const router = useRouter();
 
-  const verifyRequirement = async () => {
+  const verifyRequirement = async (isWoman?: boolean) => {
     const userRef = doc(db, 'users', driverId);
     const reviewRef = doc(db, 'driverReviews', reviewId);
     const userDoc = await getDoc(userRef);
@@ -43,10 +43,13 @@ export default function Buttons({ status, driverId, reviewId, title }: Props) {
       const imageUrl = await convertPdfToImageAndUpload(driverLicensePdf);
 
       user.requirements[0].image = imageUrl;
+      await updateDoc(userRef, { requirements: user.requirements, requirementsInReview: isInReview, isWoman });
+      await updateDoc(reviewRef, { status: 'completed', reviewedAt: new Date() });
+    } else {
+      await updateDoc(userRef, { requirements: user.requirements, requirementsInReview: isInReview });
+      await updateDoc(reviewRef, { status: 'completed', reviewedAt: new Date() });
     }
 
-    await updateDoc(userRef, { requirements: user.requirements, requirementsInReview: isInReview });
-    await updateDoc(reviewRef, { status: 'completed', reviewedAt: new Date() });
     router.back();
   };
 
@@ -141,6 +144,60 @@ export default function Buttons({ status, driverId, reviewId, title }: Props) {
     });
   };
 
+  const handleApproveLicense = async () => {
+    await Swal.fire({
+      title: 'Verify this requirement?',
+      html: `
+      <div class="flex flex-col items-start flex-1 px-2">
+        <p class="text-base text-gray-500 mb-4">This person is a Woman:</p>
+        <select id="reason" class="w-full py-3">
+          <option value="" disabled selected>-- Is a Woman? --</option>
+          <option value="true">Yes, is a woman</option>
+          <option value="false">No, is not a woman</option>
+        </select>
+      </div>
+    `,
+      input: 'checkbox',
+      inputPlaceholder: 'I have followed the steps and verified this requirement',
+      inputValue: 0,
+      showCloseButton: true,
+      showCancelButton: true,
+      confirmButtonText: `Verify`,
+      cancelButtonColor: '#d33',
+      confirmButtonColor: '#263AFF',
+      showLoaderOnConfirm: true,
+      allowOutsideClick: () => !Swal.isLoading(),
+      preConfirm: async (isChecked) => {
+        const reasonSelect = document.getElementById('reason') as HTMLSelectElement | null;
+        const isWoman = reasonSelect?.value;
+
+        if (!isChecked) {
+          Swal.showValidationMessage('You must check the box to confirm verification.');
+          return false;
+        }
+
+        if (!isWoman) {
+          Swal.showValidationMessage('You must select a reason.');
+          return false;
+        }
+
+        try {
+          await verifyRequirement(JSON.parse(isWoman)); // Si quieres usar el motivo
+          return isWoman;
+        } catch (error) {
+          Swal.showValidationMessage(`Verify failed: ${error}`);
+        }
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: 'Requirement Verified',
+          icon: 'success',
+        });
+      }
+    });
+  };
+
   const handleReject = async () => {
     await Swal.fire({
       html: `
@@ -184,11 +241,12 @@ export default function Buttons({ status, driverId, reviewId, title }: Props) {
       }
     });
   };
+
   if (status === 'inReview') {
     return (
       <div className="flex gap-2">
         <button
-          onClick={handleApprove}
+          onClick={title === 'Driver Licence' ? handleApproveLicense : handleApprove}
           disabled={status !== 'inReview'}
           className="rounded-md border border-gray-300 bg-green-500 px-3 py-2 font-medium text-white transition-all duration-150 hover:bg-green-600 disabled:cursor-none"
         >
