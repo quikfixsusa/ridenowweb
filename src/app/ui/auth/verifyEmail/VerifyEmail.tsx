@@ -1,23 +1,38 @@
 'use client';
+
 import SpinLoader from '@/app/components/SpinLoader';
 import LogoRideNow from '@/app/components/svg/LogoRideNow';
-import { auth } from '@/app/lib/firebase';
-import { applyActionCode } from 'firebase/auth';
+import { auth, db } from '@/app/lib/firebase';
+import { checkActionCode } from 'firebase/auth';
+import { collection, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
 import ContentCard from './ContentCard';
 
 export default function VerifyEmail({ actionCode }: { actionCode: string }) {
   const [loading, setLoading] = useState(false);
+
+  async function verifyEmail() {
+    try {
+      const info = await checkActionCode(auth, actionCode);
+      const userQuery = query(collection(db, 'users'), where('email', '==', info.data.email));
+      const userSnapshot = await getDocs(userQuery);
+
+      if (userSnapshot.empty) {
+        throw new Error('User not found');
+      }
+      const userDoc = userSnapshot.docs[0];
+      await updateDoc(userDoc.ref, { email_verified: true });
+      console.log('email verified');
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
-    applyActionCode(auth, actionCode)
-      .then(() => {
-        setLoading(false);
-      })
-      .catch((error) => {
-        setLoading(false);
-        console.error(error);
-      });
+    verifyEmail();
   }, [actionCode]);
   return (
     <section className="flex h-screen w-full items-center justify-center bg-white p-4">
