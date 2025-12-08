@@ -1,12 +1,12 @@
 'use client';
-import { Insurance } from '@/app/lib/definitions';
+import { IDriverInsurance } from '@/app/lib/types/userTypes';
 import { useState } from 'react';
 
 import ContentCardInsurance from './ContentCardInsurance';
 import Header from './Header';
 
 interface CardInsuranceProps {
-  data: Insurance;
+  data: IDriverInsurance;
   reviewId: string;
   driverId: string;
   requirementId: string;
@@ -35,7 +35,7 @@ export default function CardInsurance({ data, driverId, reviewId, requirementId 
           description={'Document to verify the payment of insurance of the vehicle'}
           open={open}
           setOpen={setOpen}
-          status={data.monthlyChecks[0].status}
+          status={data.monthly_checks[0].status}
         />
       )}
       {open && (

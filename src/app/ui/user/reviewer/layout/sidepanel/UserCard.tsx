@@ -1,4 +1,14 @@
-export default function UserCard({ user, loadingUser, isOpen }: { user: any; loadingUser: boolean; isOpen: boolean }) {
+import { User } from '@/app/lib/definitions';
+
+export default function UserCard({
+  user,
+  loadingUser,
+  isOpen,
+}: {
+  user: User | null;
+  loadingUser: boolean;
+  isOpen: boolean;
+}) {
   if (loadingUser) {
     return (
       <div className={`flex ${isOpen ? 'w-full' : ''} gap-2 rounded-xl bg-gray-900 p-2`}>

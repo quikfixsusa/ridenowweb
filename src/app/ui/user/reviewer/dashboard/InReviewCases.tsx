@@ -1,6 +1,6 @@
 import AngleRightIcon from '@/app/components/svg/icons/AngleRightIcon';
 import { useReviewerContext } from '@/app/lib/context/ReviewerContext';
-import { Review } from '@/app/lib/definitions';
+import { DriverRequirementReview } from '@/app/lib/types/reviewsTypes';
 import Link from 'next/link';
 
 import Cards from '../myCases/Cards';
@@ -8,10 +8,10 @@ import Cards from '../myCases/Cards';
 export default function InReviewCases() {
   const { inProgressReviews } = useReviewerContext();
 
-  function sortByCreatedAt(arr: Review[]) {
+  function sortByCreatedAt(arr: DriverRequirementReview[]) {
     return arr.sort((a, b) => {
-      const dateA = a.createdAt.seconds * 1000 + a.createdAt.nanoseconds / 1000000;
-      const dateB = b.createdAt.seconds * 1000 + b.createdAt.nanoseconds / 1000000;
+      const dateA = a.created_at.seconds * 1000 + a.created_at.nanoseconds / 1000000;
+      const dateB = b.created_at.seconds * 1000 + b.created_at.nanoseconds / 1000000;
 
       return dateA - dateB;
     });

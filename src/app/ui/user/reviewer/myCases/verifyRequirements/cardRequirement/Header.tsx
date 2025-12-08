@@ -4,12 +4,13 @@ import CheckIcon from '@/app/components/svg/icons/CheckIcon';
 import EditIcon from '@/app/components/svg/icons/EditIcon';
 import InProgressIcon from '@/app/components/svg/icons/InProgressIcon';
 import InReviewIcon from '@/app/components/svg/icons/InReviewIcon';
+import { InsuranceStatus, RequirementStatus } from '@/app/lib/types/userTypes';
 import { Dispatch, SetStateAction } from 'react';
 
 interface Props {
   title: string;
   description: string;
-  status: string;
+  status: RequirementStatus | InsuranceStatus;
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
 }
@@ -19,7 +20,7 @@ export default function Header({ title, description, status, open, setOpen }: Pr
 
   function getIconByStatus() {
     switch (status) {
-      case 'inReview':
+      case 'in_review':
         return <InReviewIcon size={28} />;
       case 'reception':
         return <InProgressIcon size={28} />;
@@ -34,7 +35,7 @@ export default function Header({ title, description, status, open, setOpen }: Pr
 
   function getColorByStatus() {
     switch (status) {
-      case 'inReview':
+      case 'in_review':
         return 'text-blueQuik';
       case 'reception':
         return 'text-yellowQuik';
@@ -47,9 +48,9 @@ export default function Header({ title, description, status, open, setOpen }: Pr
     }
   }
 
-  function parseStatus(status: string) {
+  function parseStatus(status: RequirementStatus | InsuranceStatus) {
     switch (status) {
-      case 'inReview':
+      case 'in_review':
         return 'In Review';
       case 'reception':
         return 'Reception';
@@ -62,9 +63,9 @@ export default function Header({ title, description, status, open, setOpen }: Pr
     }
   }
 
-  function getColorStatus(status: string) {
+  function getColorStatus(status: RequirementStatus | InsuranceStatus) {
     switch (status) {
-      case 'inReview':
+      case 'in_review':
         return 'bg-blue-200 text-blue-600';
       case 'reception':
         return 'bg-yellow-200 text-yellow-700';

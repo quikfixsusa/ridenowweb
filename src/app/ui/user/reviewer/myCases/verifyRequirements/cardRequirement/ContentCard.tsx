@@ -1,3 +1,5 @@
+import { DriverRequirementType } from '@/app/lib/types/reviewsTypes';
+import { RequirementStatus } from '@/app/lib/types/userTypes';
 import Link from 'next/link';
 
 import Buttons from './Buttons';
@@ -7,13 +9,14 @@ interface Props {
   verificationSteps: string;
   note: string;
   link: string;
-  status: 'reception' | 'inReview' | 'edit' | 'approved';
+  status: RequirementStatus;
   title: string;
   format: string;
   value?: string;
   vehicle?: boolean;
   driverId: string;
   reviewId: string;
+  idReq: DriverRequirementType;
 }
 
 export default function ContentCard({
@@ -26,6 +29,7 @@ export default function ContentCard({
   title,
   value,
   vehicle,
+  idReq,
 }: Props) {
   function formatText(text: string) {
     return text.split('*').map((line, index) => (
@@ -36,33 +40,33 @@ export default function ContentCard({
     ));
   }
 
-  function parseStatus(status: string) {
+  function parseStatus(status: RequirementStatus) {
     switch (status) {
-      case 'inReview':
-        return 'In Review';
+      case 'in_review':
+        return 'En revisión';
       case 'reception':
-        return 'Reception';
+        return 'Recepción';
       case 'approved':
-        return 'Approved';
+        return 'Aprovado';
       case 'edit':
-        return 'Edit';
+        return 'Editar';
       default:
-        return 'Reception';
+        return 'Recepción';
     }
   }
 
-  function getMessageByStatus(status: string) {
+  function getMessageByStatus(status: RequirementStatus) {
     switch (status) {
-      case 'inReview':
-        return 'This requirement has already been sent by the user, follow the steps and verify it.';
+      case 'in_review':
+        return 'Este requerimiento ya ha sido enviado por el usuario, sigue los pasos y verificalo.';
       case 'reception':
-        return 'This requirement has not yet been sent by the user.';
+        return 'Este requisito aún no ha sido enviado por el usuario.';
       case 'approved':
-        return 'This requirement has been approved.';
+        return 'Este requisito ha sido aprobado.';
       case 'edit':
-        return 'The user has to send the requirement again.';
+        return 'El usuario tiene que enviar el requisito de nuevo.';
       default:
-        return 'This requirement is in the reception phase.';
+        return 'Este requisito aún no ha sido enviado por el usuario.';
     }
   }
   return (
@@ -91,11 +95,11 @@ export default function ContentCard({
       <div className="flex items-center justify-between gap-3">
         {link && (
           <Link className="text-lg font-medium text-blue-600 hover:underline" href={link} target="_blank">
-            View Attached Document
+            Ver documento adjunto
           </Link>
         )}
-        {!vehicle && <Buttons status={status} driverId={driverId} reviewId={reviewId} title={title} />}
-        {vehicle && <ButtonsVehicle status={status} driverId={driverId} reviewId={reviewId} title={title} />}
+        {!vehicle && <Buttons status={status} driverId={driverId} reviewId={reviewId} idReq={idReq} />}
+        {vehicle && <ButtonsVehicle status={status} driverId={driverId} reviewId={reviewId} idReq={idReq} />}
       </div>
     </div>
   );

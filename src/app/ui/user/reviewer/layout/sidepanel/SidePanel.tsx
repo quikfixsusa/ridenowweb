@@ -25,7 +25,7 @@ export default function SidePanel() {
 
   useEffect(() => {
     if (user) {
-      const q = query(collection(db, 'driverReviews'), where('reviewerId', '==', user.id));
+      const q = query(collection(db, 'reviews'), where('reviewer_id', '==', user.id));
 
       const unsub = onSnapshot(q, (docs) => {
         if (docs.size > 0) {

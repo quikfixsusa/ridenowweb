@@ -1,58 +1,60 @@
 import { db } from '@/app/lib/firebase';
+import { DriverRequirementType } from '@/app/lib/types/reviewsTypes';
+import { IDriverUser, RequirementStatus } from '@/app/lib/types/userTypes';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
 
 interface Props {
-  status: 'reception' | 'inReview' | 'edit' | 'approved';
+  status: RequirementStatus;
   driverId: string;
   reviewId: string;
-  title: string;
+  idReq: DriverRequirementType;
 }
 
-export default function ButtonsVehicle({ status, driverId, reviewId, title }: Props) {
+export default function ButtonsVehicle({ status, driverId, reviewId, idReq }: Props) {
   const router = useRouter();
 
   const verifyRequirement = async () => {
     const userRef = doc(db, 'users', driverId);
-    const reviewRef = doc(db, 'driverReviews', reviewId);
+    const reviewRef = doc(db, 'reviews', reviewId);
     const userDoc = await getDoc(userRef);
 
     if (!userDoc.exists()) {
       throw new Error('User not found');
     }
-    const user = userDoc.data();
+    const user = userDoc.data() as IDriverUser;
 
-    const requirement = user.vehicleRequirements.findIndex((req: any) => req.title === title);
-    user.vehicleRequirements[requirement] = {
-      ...user.vehicleRequirements[requirement],
+    const requirement = user.vehicle_requirements.findIndex((req: any) => req.id === idReq);
+    user.vehicle_requirements[requirement] = {
+      ...user.vehicle_requirements[requirement],
       status: 'approved',
     };
-    const isInReview = user.vehicleRequirements.some((req: any) => req.status !== 'approved');
+    const isInReview = user.vehicle_requirements.some((req: any) => req.status !== 'approved');
 
-    await updateDoc(userRef, { vehicleRequirements: user.vehicleRequirements, vehicleInReview: isInReview });
-    await updateDoc(reviewRef, { status: 'completed', reviewedAt: new Date() });
+    await updateDoc(userRef, { vehicle_requirements: user.vehicle_requirements, vehicle_approved: !isInReview });
+    await updateDoc(reviewRef, { status: 'completed', reviewed_at: new Date() });
     router.back();
   };
 
   const rejectRequirement = async (note: string) => {
     const userRef = doc(db, 'users', driverId);
-    const reviewRef = doc(db, 'driverReviews', reviewId);
+    const reviewRef = doc(db, 'reviews', reviewId);
     const userDoc = await getDoc(userRef);
 
     if (!userDoc.exists()) {
       throw new Error('User not found');
     }
-    const user = userDoc.data();
-    const requirement = user.vehicleRequirements.findIndex((req: any) => req.title === title);
-    user.vehicleRequirements[requirement] = {
-      ...user.vehicleRequirements[requirement],
+    const user = userDoc.data() as IDriverUser;
+    const requirement = user.vehicle_requirements.findIndex((req: any) => req.id === idReq);
+    user.vehicle_requirements[requirement] = {
+      ...user.vehicle_requirements[requirement],
       status: 'edit',
       note: note,
     };
 
-    await updateDoc(userRef, { vehicleRequirements: user.vehicleRequirements });
-    await updateDoc(reviewRef, { status: 'completed', reviewedAt: new Date() });
+    await updateDoc(userRef, { vehicle_requirements: user.vehicle_requirements });
+    await updateDoc(reviewRef, { status: 'completed', reviewed_at: new Date() });
     router.back();
   };
 
@@ -141,22 +143,22 @@ export default function ButtonsVehicle({ status, driverId, reviewId, title }: Pr
       }
     });
   };
-  if (status === 'inReview') {
+  if (status === 'in_review') {
     return (
       <div className="flex gap-2">
         <button
           onClick={handleApprove}
-          disabled={status !== 'inReview'}
+          disabled={status !== 'in_review'}
           className="rounded-md border border-gray-300 bg-green-500 px-3 py-2 font-medium text-white transition-all duration-150 hover:bg-green-600 disabled:cursor-none"
         >
-          Approve
+          Aprobar
         </button>
         <button
           onClick={handleReject}
-          disabled={status !== 'inReview'}
+          disabled={status !== 'in_review'}
           className="rounded-md border border-gray-300 bg-red-500 px-3 py-2 font-medium text-white transition-all duration-150 hover:bg-red-600 disabled:cursor-none"
         >
-          Reject
+          Rechazar
         </button>
       </div>
     );

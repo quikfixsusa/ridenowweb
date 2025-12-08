@@ -1,4 +1,4 @@
-import { Insurance } from '@/app/lib/definitions';
+import { IDriverInsurance } from '@/app/lib/types/userTypes';
 import dayjs from 'dayjs';
 import Link from 'next/link';
 
@@ -7,14 +7,14 @@ import ButtonsProof from './ButtonsProof';
 
 interface Props {
   verificationSteps: string;
-  data: Insurance;
+  data: IDriverInsurance;
   driverId: string;
   reviewId: string;
   requirementId: string;
 }
 
 export default function ContentCardInsurance({ verificationSteps, driverId, reviewId, data, requirementId }: Props) {
-  const status = requirementId === 'insurance' ? data.status : data.monthlyChecks[0].status;
+  const status = requirementId === 'insurance' ? data.status : data.monthly_checks[0].status;
 
   function formatText(text: string) {
     return text.split('*').map((line, index) => (
@@ -27,7 +27,7 @@ export default function ContentCardInsurance({ verificationSteps, driverId, revi
 
   function parseStatus(status: string) {
     switch (status) {
-      case 'inReview':
+      case 'in_review':
         return 'In Review';
       case 'submitted':
         return 'Submitted';
@@ -42,7 +42,7 @@ export default function ContentCardInsurance({ verificationSteps, driverId, revi
 
   function getMessageByStatus(status: string) {
     switch (status) {
-      case 'inReview':
+      case 'in_review':
         return 'This requirement has already been sent by the user, follow the steps and verify it.';
       case 'submitted':
         return 'This requirement has been sent by the user.';
@@ -68,22 +68,22 @@ export default function ContentCardInsurance({ verificationSteps, driverId, revi
           <div className="flex flex-col gap-3">
             <div className="flex justify-between gap-4">
               <p className="text-gray-600">Effective Date:</p>
-              <p className="font-semibold">{dayjs(data.effectiveDate.seconds * 1000).format('MMMM D, YYYY')}</p>
+              <p className="font-semibold">{dayjs(data.effective_date.seconds * 1000).format('MMMM D, YYYY')}</p>
             </div>
             <hr />
             <div className="flex justify-between gap-4">
               <p className="text-gray-600">Expiration Date:</p>
-              <p className="font-semibold">{dayjs(data.expiryDate.seconds * 1000).format('MMMM D, YYYY')}</p>
+              <p className="font-semibold">{dayjs(data.expiry_date.seconds * 1000).format('MMMM D, YYYY')}</p>
             </div>
             <hr />
             <div className="flex justify-between gap-4">
               <p className="text-gray-600">Submitted:</p>
-              <p className="font-semibold">{dayjs(data.submittedAt.seconds * 1000).format('MMMM D, YYYY')}</p>
+              <p className="font-semibold">{dayjs(data.submitted_at.seconds * 1000).format('MMMM D, YYYY')}</p>
             </div>
             <hr />
             <div className="flex justify-between gap-4">
               <p className="text-gray-600">Next Due Date:</p>
-              <p className="font-semibold">{dayjs(data.dueDate.seconds * 1000).format('MMMM D, YYYY')}</p>
+              <p className="font-semibold">{dayjs(data.due_date.seconds * 1000).format('MMMM D, YYYY')}</p>
             </div>
           </div>
         </div>
@@ -93,17 +93,17 @@ export default function ContentCardInsurance({ verificationSteps, driverId, revi
           <div className="flex flex-col gap-3">
             <div className="flex justify-between gap-4">
               <p className="text-gray-600">Policy Number</p>
-              <p className="font-semibold">{data.policyNumber}</p>
+              <p className="font-semibold">{data.policy_number}</p>
             </div>
             <hr />
             <div className="flex justify-between gap-4">
               <p className="text-gray-600">Insurer</p>
-              <p className="font-semibold">{data.insurerName}</p>
+              <p className="font-semibold">{data.insurer_name}</p>
             </div>
             <hr />
             <div className="flex justify-between gap-4">
               <p className="text-gray-600">Includes Rideshare</p>
-              <p className="font-semibold">{data.includesRideshare ? 'Yes' : 'No'}</p>
+              <p className="font-semibold">{data.includes_rideshare ? 'Yes' : 'No'}</p>
             </div>
           </div>
         </div>
@@ -115,21 +115,25 @@ export default function ContentCardInsurance({ verificationSteps, driverId, revi
       </div>
 
       <div className="flex items-center justify-between gap-3">
-        {requirementId === 'insurance' && data.documentUrl && (
-          <Link className="text-lg font-medium text-blue-600 hover:underline" href={data.documentUrl} target="_blank">
+        {requirementId === 'insurance' && data.document_url && (
+          <Link className="text-lg font-medium text-blue-600 hover:underline" href={data.document_url} target="_blank">
             View Attached Document
           </Link>
         )}
         <div className="flex flex-col gap-3">
-          {requirementId === 'insurance_proof' && data.documentUrl && (
-            <Link className="text-lg font-medium text-blue-600 hover:underline" href={data.documentUrl} target="_blank">
+          {requirementId === 'insurance_proof' && data.document_url && (
+            <Link
+              className="text-lg font-medium text-blue-600 hover:underline"
+              href={data.document_url}
+              target="_blank"
+            >
               View Insurance
             </Link>
           )}
-          {requirementId === 'insurance_proof' && data.monthlyChecks[0].documentUrl && (
+          {requirementId === 'insurance_proof' && data.monthly_checks[0].document_url && (
             <Link
               className="text-lg font-medium text-blue-600 hover:underline"
-              href={data.monthlyChecks[0].documentUrl}
+              href={data.monthly_checks[0].document_url}
               target="_blank"
             >
               View Attached Proof
@@ -140,7 +144,7 @@ export default function ContentCardInsurance({ verificationSteps, driverId, revi
           <ButtonsInsurance status={data.status} driverId={driverId} reviewId={reviewId} />
         )}
         {requirementId === 'insurance_proof' && (
-          <ButtonsProof status={data.monthlyChecks[0].status} driverId={driverId} reviewId={reviewId} />
+          <ButtonsProof status={data.monthly_checks[0].status} driverId={driverId} reviewId={reviewId} />
         )}
       </div>
     </div>

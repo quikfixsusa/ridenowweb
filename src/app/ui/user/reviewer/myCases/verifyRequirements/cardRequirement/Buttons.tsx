@@ -1,4 +1,6 @@
 import { db } from '@/app/lib/firebase';
+import { DriverRequirementType } from '@/app/lib/types/reviewsTypes';
+import { DriverRequirement, IDriverUser, RequirementStatus } from '@/app/lib/types/userTypes';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { useRouter } from 'next/navigation';
@@ -6,29 +8,29 @@ import * as pdfjsLib from 'pdfjs-dist';
 import Swal from 'sweetalert2';
 
 interface Props {
-  status: 'reception' | 'inReview' | 'edit' | 'approved';
+  status: RequirementStatus;
   driverId: string;
   reviewId: string;
-  title: string;
+  idReq: DriverRequirementType;
 }
 
-export default function Buttons({ status, driverId, reviewId, title }: Props) {
+export default function Buttons({ status, driverId, reviewId, idReq }: Props) {
   // Configurar el worker
   pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.mjs';
   const router = useRouter();
 
   const verifyRequirement = async (isWoman?: boolean) => {
     const userRef = doc(db, 'users', driverId);
-    const reviewRef = doc(db, 'driverReviews', reviewId);
+    const reviewRef = doc(db, 'reviews', reviewId);
     const userDoc = await getDoc(userRef);
 
     if (!userDoc.exists()) {
       throw new Error('User not found');
     }
 
-    const user = userDoc.data();
+    const user = userDoc.data() as IDriverUser;
 
-    const requirement = user.requirements.findIndex((req: any) => req.title === title);
+    const requirement = user.requirements.findIndex((req: DriverRequirement) => req.id === idReq);
     user.requirements[requirement] = {
       ...user.requirements[requirement],
       status: 'approved',
@@ -36,18 +38,22 @@ export default function Buttons({ status, driverId, reviewId, title }: Props) {
 
     const isInReview = user.requirements.some((req: any) => req.status !== 'approved');
 
-    if (title === 'Driver Licence') {
+    if (idReq === 'driver_licence') {
       const driverLicensePdf = user.requirements[0].link;
 
       // Convert PDF to image and upload to Firebase Storage
       const imageUrl = await convertPdfToImageAndUpload(driverLicensePdf);
 
-      user.requirements[0].image = imageUrl;
-      await updateDoc(userRef, { requirements: user.requirements, requirementsInReview: isInReview, isWoman });
-      await updateDoc(reviewRef, { status: 'completed', reviewedAt: new Date() });
+      user.requirements[0].image_url = imageUrl;
+      await updateDoc(userRef, {
+        requirements: user.requirements,
+        requirements_approved: !isInReview,
+        is_woman: isWoman,
+      });
+      await updateDoc(reviewRef, { status: 'completed', reviewed_at: new Date() });
     } else {
-      await updateDoc(userRef, { requirements: user.requirements, requirementsInReview: isInReview });
-      await updateDoc(reviewRef, { status: 'completed', reviewedAt: new Date() });
+      await updateDoc(userRef, { requirements: user.requirements, requirements_approved: !isInReview });
+      await updateDoc(reviewRef, { status: 'completed', reviewed_at: new Date() });
     }
 
     router.back();
@@ -56,9 +62,7 @@ export default function Buttons({ status, driverId, reviewId, title }: Props) {
   const convertPdfToImageAndUpload = async (pdfUrl: string) => {
     const response = await fetch(pdfUrl);
     const arrayBuffer = await response.arrayBuffer();
-    console.log(arrayBuffer);
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    console.log(pdf.getData());
     const page = await pdf.getPage(1);
     const viewport = page.getViewport({ scale: 1.0 });
     const canvas = document.createElement('canvas');
@@ -76,7 +80,7 @@ export default function Buttons({ status, driverId, reviewId, title }: Props) {
 
     // Upload image to Firebase Storage
     const storage = getStorage();
-    const storageRef = ref(storage, `requirements/${driverId}/Driver License.jpg`);
+    const storageRef = ref(storage, `requirements/${driverId}/driver-licence`);
     await uploadString(storageRef, dataUrl, 'data_url');
     const downloadUrl = await getDownloadURL(storageRef);
     return downloadUrl;
@@ -84,21 +88,21 @@ export default function Buttons({ status, driverId, reviewId, title }: Props) {
 
   const rejectRequirement = async (note: string) => {
     const userRef = doc(db, 'users', driverId);
-    const reviewRef = doc(db, 'driverReviews', reviewId);
+    const reviewRef = doc(db, 'reviews', reviewId);
     const userDoc = await getDoc(userRef);
     if (!userDoc.exists()) {
       throw new Error('User not found');
     }
     const user = userDoc.data();
-    const requirement = user.requirements.findIndex((req: any) => req.title === title);
+    const requirement = user.requirements.findIndex((req: any) => req.id === idReq);
     user.requirements[requirement] = {
       ...user.requirements[requirement],
       status: 'edit',
-      note: note,
+      note,
     };
 
     await updateDoc(userRef, { requirements: user.requirements });
-    await updateDoc(reviewRef, { status: 'completed', reviewedAt: new Date() });
+    await updateDoc(reviewRef, { status: 'completed', reviewed_at: new Date() });
     router.back();
   };
 
@@ -242,22 +246,22 @@ export default function Buttons({ status, driverId, reviewId, title }: Props) {
     });
   };
 
-  if (status === 'inReview') {
+  if (status === 'in_review') {
     return (
       <div className="flex gap-2">
         <button
-          onClick={title === 'Driver Licence' ? handleApproveLicense : handleApprove}
-          disabled={status !== 'inReview'}
+          onClick={idReq === 'driver_licence' ? handleApproveLicense : handleApprove}
+          disabled={status !== 'in_review'}
           className="rounded-md border border-gray-300 bg-green-500 px-3 py-2 font-medium text-white transition-all duration-150 hover:bg-green-600 disabled:cursor-none"
         >
-          Approve
+          Aprobar
         </button>
         <button
           onClick={handleReject}
-          disabled={status !== 'inReview'}
+          disabled={status !== 'in_review'}
           className="rounded-md border border-gray-300 bg-red-500 px-3 py-2 font-medium text-white transition-all duration-150 hover:bg-red-600 disabled:cursor-none"
         >
-          Reject
+          Rechazar
         </button>
       </div>
     );
