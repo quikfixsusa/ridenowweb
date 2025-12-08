@@ -62,7 +62,11 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
     const userDoc = await getDoc(doc(db, 'users', userId));
     const userData = userDoc.data();
     if (userData) {
-      setDriverLicenseImage(userData.requirements[0].image);
+      if (!userData.requirements[0].image_url) {
+        router.push('/face/error');
+        return;
+      }
+      setDriverLicenseImage(userData.requirements[0].image_url);
     }
   }
 
