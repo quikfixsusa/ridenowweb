@@ -82,7 +82,7 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
 
   const handleFacesMatch = async () => {
     const userRef = doc(db, 'users', userId);
-    await updateDoc(userRef, { verifyIdentityRequired: false, status: 'available' });
+    await updateDoc(userRef, { verify_identity_required: false, availability: 'availability' });
     setLoading(false);
     router.push('/face/success');
   };
@@ -312,7 +312,7 @@ export default function FacePage({ searchParams }: { searchParams: { userId: str
       {loading && (
         <div className="absolute flex h-full w-full items-center justify-center gap-2 bg-[rgba(0,0,0,0.5)]">
           <div className="loader" />
-          <p className="text-white">Verifying identity...</p>
+          <p className="text-white">Verificando identidad...</p>
         </div>
       )}
       {image && <img src={image} alt="user-image" className="h-auto w-full sm:h-full sm:w-auto" />}

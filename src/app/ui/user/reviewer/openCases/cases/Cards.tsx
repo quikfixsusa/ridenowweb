@@ -1,10 +1,11 @@
 import { useReviewerContext } from '@/app/lib/context/ReviewerContext';
+import { DriverRequirementReview } from '@/app/lib/types/reviewsTypes';
 
 import ReviewCard from './ReviewCard';
 import UserSkeletonCard from './UserSkeletonCard';
 
 interface CasesProps {
-  reviewsData: any;
+  reviewsData: DriverRequirementReview[];
   loading: boolean;
 }
 
@@ -19,7 +20,7 @@ export default function Cards({ reviewsData, loading }: CasesProps) {
       {!loadingUser &&
         user &&
         reviewsData.length > 0 &&
-        reviewsData.map((review: any) => <ReviewCard key={user.id} reviewData={review} />)}
+        reviewsData.map((review) => <ReviewCard key={user.id} reviewData={review} />)}
     </div>
   );
 }

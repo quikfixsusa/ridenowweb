@@ -1,7 +1,9 @@
+import { DriverRequirementReview } from '@/app/lib/types/reviewsTypes';
+
 import Cards from './Cards';
 
 interface CasesProps {
-  reviewsData: any;
+  reviewsData: DriverRequirementReview[];
   loading: boolean;
 }
 

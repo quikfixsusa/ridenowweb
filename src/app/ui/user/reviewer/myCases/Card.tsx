@@ -1,9 +1,9 @@
 'use client';
 import UserIcon from '@/app/components/svg/icons/UserIcon';
-import { Review } from '@/app/lib/definitions';
+import { DriverRequirementReview } from '@/app/lib/types/reviewsTypes';
 import Link from 'next/link';
 
-export default function Card({ reviewData }: { reviewData: Review }) {
+export default function Card({ reviewData }: { reviewData: DriverRequirementReview }) {
   function parseDate({ seconds, nanoseconds }: { seconds: number; nanoseconds: number }) {
     // Convierte seconds a milisegundos y nanoseconds a milisegundos
     const milliseconds = seconds * 1000 + nanoseconds / 1000000;
@@ -22,16 +22,16 @@ export default function Card({ reviewData }: { reviewData: Review }) {
   return (
     <div className="flex flex-2 flex-col gap-3 rounded-xl border border-gray-300 p-4 lg:flex-3">
       <div className="flex w-full items-center justify-between gap-2">
-        <p className="text-sm font-medium text-gray-600">{parseDate(reviewData.createdAt)}</p>
-        <p className="rounded-sm bg-yellowQuik px-4 text-sm text-black">{reviewData.titleRequirement}</p>
+        <p className="text-sm font-medium text-gray-600">{parseDate(reviewData.created_at)}</p>
+        <p className="rounded-sm bg-yellowQuik px-4 text-sm text-black">{reviewData.title_requirement}</p>
       </div>
       <div className="flex items-center gap-3">
         <div className="rounded-full bg-gray-200 p-[13px]">
           <UserIcon size={18} color="gray" />
         </div>
         <div>
-          <p className="font-semibold">{reviewData.driverName}</p>
-          <p className="text-xs text-gray-600">{reviewData.driverId}</p>
+          <p className="font-semibold">{reviewData.driver_name}</p>
+          <p className="text-xs text-gray-600">{reviewData.driver_id}</p>
         </div>
       </div>
       <hr />
@@ -40,11 +40,11 @@ export default function Card({ reviewData }: { reviewData: Review }) {
           href={`/user/reviewer/mycases/${reviewData.id}`}
           className="w-full rounded-md bg-blueQuik py-2 text-center font-medium text-white transition-all duration-150 hover:bg-blue-700"
         >
-          Verify Requirement
+          Verificar Requerimiento
         </Link>
       )}
       {reviewData.status === 'completed' && (
-        <div className="w-full rounded-md bg-green-600 py-2 text-center font-medium text-white">Completed</div>
+        <div className="w-full rounded-md bg-green-600 py-2 text-center font-medium text-white">Completado</div>
       )}
     </div>
   );

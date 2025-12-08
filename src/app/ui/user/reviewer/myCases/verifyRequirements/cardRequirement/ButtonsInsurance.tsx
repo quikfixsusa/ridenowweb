@@ -1,10 +1,11 @@
 import { db } from '@/app/lib/firebase';
+import { IDriverUser, InsuranceStatus } from '@/app/lib/types/userTypes';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
 
 interface Props {
-  status: 'submitted' | 'inReview' | 'edit' | 'approved';
+  status: InsuranceStatus;
   driverId: string;
   reviewId: string;
 }
@@ -14,26 +15,29 @@ export default function ButtonsInsurance({ status, driverId, reviewId }: Props) 
 
   const verifyRequirement = async () => {
     const userRef = doc(db, 'users', driverId);
-    const reviewRef = doc(db, 'driverReviews', reviewId);
+    const reviewRef = doc(db, 'reviews', reviewId);
     const userDoc = await getDoc(userRef);
 
     if (!userDoc.exists()) {
       throw new Error('User not found');
     }
 
-    const user = userDoc.data();
+    const user = userDoc.data() as IDriverUser;
 
+    if (!user.insurance) {
+      throw new Error('Insurance not found');
+    }
     const insurance = user.insurance;
     insurance.status = 'approved';
 
-    await updateDoc(userRef, { insurance, insuranceInReview: false });
-    await updateDoc(reviewRef, { status: 'completed', reviewedAt: new Date() });
+    await updateDoc(userRef, { insurance, insurance_approved: true });
+    await updateDoc(reviewRef, { status: 'completed', reviewed_at: new Date() });
     router.back();
   };
 
   const rejectRequirement = async (note: string) => {
     const userRef = doc(db, 'users', driverId);
-    const reviewRef = doc(db, 'driverReviews', reviewId);
+    const reviewRef = doc(db, 'reviews', reviewId);
     const userDoc = await getDoc(userRef);
     if (!userDoc.exists()) {
       throw new Error('User not found');
@@ -44,7 +48,7 @@ export default function ButtonsInsurance({ status, driverId, reviewId }: Props) 
     insurance.note = note;
 
     await updateDoc(userRef, { insurance });
-    await updateDoc(reviewRef, { status: 'completed', reviewedAt: new Date() });
+    await updateDoc(reviewRef, { status: 'completed', reviewed_at: new Date() });
     router.back();
   };
 
@@ -133,22 +137,22 @@ export default function ButtonsInsurance({ status, driverId, reviewId }: Props) 
       }
     });
   };
-  if (status === 'inReview') {
+  if (status === 'in_review') {
     return (
       <div className="flex gap-2">
         <button
           onClick={handleApprove}
-          disabled={status !== 'inReview'}
+          disabled={status !== 'in_review'}
           className="rounded-md border border-gray-300 bg-green-500 px-3 py-2 font-medium text-white transition-all duration-150 hover:bg-green-600 disabled:cursor-none"
         >
-          Approve
+          Aprobar
         </button>
         <button
           onClick={handleReject}
-          disabled={status !== 'inReview'}
+          disabled={status !== 'in_review'}
           className="rounded-md border border-gray-300 bg-red-500 px-3 py-2 font-medium text-white transition-all duration-150 hover:bg-red-600 disabled:cursor-none"
         >
-          Reject
+          Rechazar
         </button>
       </div>
     );

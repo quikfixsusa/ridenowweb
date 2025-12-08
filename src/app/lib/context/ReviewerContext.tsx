@@ -1,15 +1,16 @@
 'use client';
 import { createContext, Dispatch, SetStateAction, useContext, useState } from 'react';
 
-import { Review, User } from '../definitions';
+import { User } from '../definitions';
+import { DriverRequirementReview } from '../types/reviewsTypes';
 
 interface homeTypes {
   user: User | null;
-  setUser: Dispatch<any>;
+  setUser: Dispatch<User | null>;
   loadingUser: boolean;
   setLoadingUser: Dispatch<SetStateAction<boolean>>;
-  inProgressReviews: Review[];
-  setInProgressReviews: Dispatch<SetStateAction<Review[]>>;
+  inProgressReviews: DriverRequirementReview[];
+  setInProgressReviews: Dispatch<SetStateAction<DriverRequirementReview[]>>;
   loadingInProgress: boolean;
   setLoadingInProgress: Dispatch<SetStateAction<boolean>>;
 }
@@ -28,7 +29,7 @@ const ReviewerContext = createContext<homeTypes>({
 export function ReviewerWrapper({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
-  const [inProgressReviews, setInProgressReviews] = useState<Review[]>([]);
+  const [inProgressReviews, setInProgressReviews] = useState<DriverRequirementReview[]>([]);
   const [loadingInProgress, setLoadingInProgress] = useState(true);
   return (
     <ReviewerContext.Provider

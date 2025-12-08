@@ -2,6 +2,7 @@
 import HeaderSectionDashboard from '@/app/components/HeaderSectionDashboard';
 import { useReviewerContext } from '@/app/lib/context/ReviewerContext';
 import { db } from '@/app/lib/firebase';
+import { DriverRequirementReview } from '@/app/lib/types/reviewsTypes';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -11,17 +12,17 @@ import NavTypeCases from './NavTypeCases';
 
 export default function OpenCasesView() {
   const { user } = useReviewerContext();
-  const [reviewsData, setReviewsData] = useState<any[]>([]);
+  const [reviewsData, setReviewsData] = useState<DriverRequirementReview[]>([]);
   const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
 
   const searchPage = searchParams.get('page');
   const page = searchPage !== null ? parseInt(searchPage) : 1;
 
-  function sortByCreatedAt(arr: any[]) {
+  function sortByCreatedAt(arr: DriverRequirementReview[]) {
     return arr.sort((a, b) => {
-      const dateA = a.createdAt.seconds * 1000 + a.createdAt.nanoseconds / 1000000;
-      const dateB = b.createdAt.seconds * 1000 + b.createdAt.nanoseconds / 1000000;
+      const dateA = a.created_at.seconds * 1000 + a.created_at.nanoseconds / 1000000;
+      const dateB = b.created_at.seconds * 1000 + b.created_at.nanoseconds / 1000000;
 
       return dateA - dateB;
     });
@@ -29,9 +30,9 @@ export default function OpenCasesView() {
 
   useEffect(() => {
     if (user) {
-      const unsub = onSnapshot(query(collection(db, 'driverReviews'), where('reviewerId', '==', null)), (docs) => {
+      const unsub = onSnapshot(query(collection(db, 'reviews'), where('reviewer_id', '==', null)), (docs) => {
         if (docs.size > 0) {
-          const data = docs.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+          const data = docs.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
           setReviewsData(sortByCreatedAt(data));
         } else {
           setReviewsData([]);

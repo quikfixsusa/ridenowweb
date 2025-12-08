@@ -1,6 +1,7 @@
 import { db } from '@/app/lib/firebase';
+import { IDriverUser } from '@/app/lib/types/userTypes';
 import dayjs from 'dayjs';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, Timestamp, updateDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
 
@@ -15,45 +16,53 @@ export default function ButtonsProof({ status, driverId, reviewId }: Props) {
 
   const verifyRequirement = async () => {
     const userRef = doc(db, 'users', driverId);
-    const reviewRef = doc(db, 'driverReviews', reviewId);
+    const reviewRef = doc(db, 'reviews', reviewId);
     const userDoc = await getDoc(userRef);
 
     if (!userDoc.exists()) {
       throw new Error('User not found');
     }
 
-    const user = userDoc.data();
+    const user = userDoc.data() as IDriverUser;
 
     const insurance = user.insurance;
-    insurance.monthlyChecks[0].status = 'approved';
-
-    if (insurance.lastVerifiedAt !== null) {
-      insurance.dueDate = dayjs(insurance.dueDate.seconds * 1000)
-        .add(1, 'month')
-        .startOf('day')
-        .toDate();
+    if (!insurance) {
+      throw new Error('Insurance not found');
     }
-    insurance.lastVerifiedAt = new Date();
+    insurance.monthly_checks[0].status = 'approved';
+
+    if (insurance.last_verified !== null) {
+      insurance.due_date = Timestamp.fromDate(
+        dayjs(insurance.due_date.seconds * 1000)
+          .add(1, 'month')
+          .startOf('day')
+          .toDate(),
+      );
+    }
+    insurance.last_verified = Timestamp.now();
 
     await updateDoc(userRef, { insurance });
-    await updateDoc(reviewRef, { status: 'completed', reviewedAt: new Date() });
+    await updateDoc(reviewRef, { status: 'completed', reviewed_at: new Date() });
     router.back();
   };
 
   const rejectRequirement = async (note: string) => {
     const userRef = doc(db, 'users', driverId);
-    const reviewRef = doc(db, 'driverReviews', reviewId);
+    const reviewRef = doc(db, 'reviews', reviewId);
     const userDoc = await getDoc(userRef);
     if (!userDoc.exists()) {
       throw new Error('User not found');
     }
-    const user = userDoc.data();
+    const user = userDoc.data() as IDriverUser;
     const insurance = user.insurance;
-    insurance.monthlyChecks[0].status = 'edit';
-    insurance.monthlyChecks[0].note = note;
+    if (!insurance) {
+      throw new Error('Insurance not found');
+    }
+    insurance.monthly_checks[0].status = 'edit';
+    insurance.monthly_checks[0].note = note;
 
     await updateDoc(userRef, { insurance });
-    await updateDoc(reviewRef, { status: 'completed', reviewedAt: new Date() });
+    await updateDoc(reviewRef, { status: 'completed', reviewed_at: new Date() });
     router.back();
   };
 
@@ -150,14 +159,14 @@ export default function ButtonsProof({ status, driverId, reviewId }: Props) {
           disabled={status !== 'inReview'}
           className="rounded-md border border-gray-300 bg-green-500 px-3 py-2 font-medium text-white transition-all duration-150 hover:bg-green-600 disabled:cursor-none"
         >
-          Approve
+          Aprobar
         </button>
         <button
           onClick={handleReject}
           disabled={status !== 'inReview'}
           className="rounded-md border border-gray-300 bg-red-500 px-3 py-2 font-medium text-white transition-all duration-150 hover:bg-red-600 disabled:cursor-none"
         >
-          Reject
+          Rechazar
         </button>
       </div>
     );

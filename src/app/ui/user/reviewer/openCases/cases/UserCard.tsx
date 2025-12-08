@@ -80,7 +80,7 @@ export default function UserCard({ userData }: { userData: any }) {
         onClick={toastiNoty}
         className="w-full rounded-md bg-blueQuik py-2 font-medium text-white transition-all duration-150 hover:bg-blue-700"
       >
-        Accept
+        Aceptar
       </button>
     </div>
   );

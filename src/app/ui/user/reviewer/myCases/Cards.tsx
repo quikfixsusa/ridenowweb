@@ -1,11 +1,11 @@
 'use client';
 import { useReviewerContext } from '@/app/lib/context/ReviewerContext';
-import { Review } from '@/app/lib/definitions';
+import { DriverRequirementReview } from '@/app/lib/types/reviewsTypes';
 
 import Card from './Card';
 import CardSkeleton from './CardSkeleton';
 
-export default function Cards({ reviews, home }: { reviews: Review[]; home?: boolean }) {
+export default function Cards({ reviews, home }: { reviews: DriverRequirementReview[]; home?: boolean }) {
   const { loadingInProgress } = useReviewerContext();
   const loadingSkeleton = home ? [1, 2, 3] : [1, 2, 3, 4, 5, 6];
   return (
