@@ -5,7 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <main className="flex items-start">
+    <main className="h-screen w-full">
       {children}
       <ToastContainer />
     </main>

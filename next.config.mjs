@@ -10,6 +10,12 @@ const nextConfig = {
       },
     ],
   },
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['localhost:3000', '*.devtunnels.ms', '*.uks1.devtunnels.ms'],
+      bodySizeLimit: '10mb',
+    },
+  },
   webpack(config, { isServer }) {
     if (!isServer) {
       config.resolve.fallback = {
