@@ -30,7 +30,7 @@ export default function RootLayout({
         <meta charSet="UTF-8" />
         <link rel="icon" type="image/x-icon" href="/images/favicon.ico" />
         <link rel="canonical" href="https://ridenowtaxis.com/" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
         <meta name="description" content="Travel safely wherever you want at any time!" />
         <title>RideNow</title>
       </head>
