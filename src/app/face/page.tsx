@@ -173,8 +173,8 @@ const VerificationContent: React.FC = () => {
     // Already in DOCUMENT_CAPTURE step, just clearing error clears modal
   };
 
-  const handleSuccessContinue = async () => {
-    // Success Logic called on button click
+  const handleSuccessContinue = React.useCallback(async () => {
+    // Success Logic called on button click or auto-timer
     console.log('Verification Successful. Updating UserId:', userId);
 
     if (userId) {
@@ -190,7 +190,17 @@ const VerificationContent: React.FC = () => {
 
     // Navigate immediately using window.location for reliability
     router.push('/face/success');
-  };
+  }, [userId, router]);
+
+  // Auto-navigate on success
+  useEffect(() => {
+    if (step === VerificationStep.SUCCESS) {
+      const timer = setTimeout(() => {
+        handleSuccessContinue();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [step, handleSuccessContinue]);
 
   // --- Helpers ---
 
@@ -444,12 +454,11 @@ const VerificationContent: React.FC = () => {
                 </div>
               )}
             </div>
-            <button
-              onClick={handleSuccessContinue}
-              className="w-full max-w-xs rounded-xl bg-gray-900 py-4 font-semibold text-white shadow-lg"
-            >
-              {t.continue}
-            </button>
+
+            <div className="flex flex-col items-center">
+              <Loader2 className="mb-2 h-6 w-6 animate-spin text-gray-400" />
+              <p className="text-sm text-gray-400">{lang === 'es' ? 'Redirigiendo...' : 'Redirecting...'}</p>
+            </div>
           </div>
         )}
 

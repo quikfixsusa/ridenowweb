@@ -1,5 +1,6 @@
-import { RotateCcw, Loader2 } from 'lucide-react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { RotateCcw, Loader2, SwitchCamera } from 'lucide-react';
+import React, { useCallback, useRef, useState } from 'react';
+import Webcam from 'react-webcam';
 
 interface CameraProps {
   onCapture: (imageSrc: string) => void;
@@ -9,85 +10,55 @@ interface CameraProps {
 }
 
 const Camera: React.FC<CameraProps> = ({ onCapture, maskType, instruction, facingMode = 'environment' }) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const webcamRef = useRef<Webcam>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activeFacingMode, setActiveFacingMode] = useState(facingMode);
 
-  const startStream = useCallback(async () => {
+  const handleUserMedia = useCallback(() => {
+    setIsStreaming(true);
     setError(null);
+  }, []);
 
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      setError('Camera API not available. Please ensure you are using HTTPS or localhost.');
-      return;
-    }
+  const handleUserMediaError = useCallback(
+    (err: string | DOMException) => {
+      const errorObj = typeof err === 'string' ? new Error(err) : err;
+      console.error('Camera initialization failed', errorObj);
 
-    try {
-      const constraints = {
-        video: {
-          facingMode: facingMode,
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-        },
-        audio: false,
-      };
-
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.srcObject = stream;
-        // Use onCanPlay for better reliability
-        videoRef.current.oncanplay = () => {
-          videoRef.current?.play();
-          setIsStreaming(true);
-        };
-        // Fallback: if event doesn't fire, force it after a short delay
-        setTimeout(() => setIsStreaming(true), 1000);
+      // Auto-fallback: If we failed on 'user' facing mode, automatically switch to 'environment'
+      if (activeFacingMode === 'user') {
+        console.warn('Fast-fail: Front camera failed, switching directly to environment.');
+        setActiveFacingMode('environment');
+        return;
       }
-    } catch (err: any) {
-      console.error('Camera access error:', err);
-      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+
+      setIsStreaming(false);
+
+      if (errorObj.name === 'NotAllowedError' || errorObj.name === 'PermissionDeniedError') {
         setError('Camera permission denied. Please allow camera access in your browser settings.');
       } else {
         setError('Unable to access camera. Please ensure no other app is using it.');
       }
-    }
-  }, [facingMode]);
+    },
+    [activeFacingMode],
+  );
 
-  useEffect(() => {
-    startStream();
-    return () => {
-      // Cleanup stream
-      if (videoRef.current && videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach((track) => track.stop());
-      }
+  const handleCapture = useCallback(() => {
+    const imageSrc = webcamRef.current?.getScreenshot();
+    if (imageSrc) {
+      onCapture(imageSrc);
+    }
+  }, [onCapture]);
+
+  const getVideoConstraints = () => {
+    if (activeFacingMode === 'user') {
+      return { facingMode: 'user' }; // Minimal constraints
+    }
+    return {
+      facingMode: 'environment',
+      width: { ideal: 1920 },
+      height: { ideal: 1080 },
     };
-  }, [startStream]);
-
-  const handleCapture = () => {
-    if (videoRef.current && canvasRef.current) {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      const context = canvas.getContext('2d');
-
-      // Set canvas dimensions to match video
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-
-      if (context) {
-        // Flip horizontally if using front camera for natural mirror effect
-        if (facingMode === 'user') {
-          context.translate(canvas.width, 0);
-          context.scale(-1, 1);
-        }
-
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageSrc = canvas.toDataURL('image/jpeg', 0.9);
-        onCapture(imageSrc);
-      }
-    }
   };
 
   return (
@@ -96,30 +67,47 @@ const Camera: React.FC<CameraProps> = ({ onCapture, maskType, instruction, facin
         <div className="p-6 text-center text-white">
           <p className="mb-4">{error}</p>
           <button
-            onClick={() => startStream()}
+            onClick={() => {
+              setError(null);
+              // Force re-render/retry logic if needed, usually changing key or state
+              // Switching modes is the best way to retry cleanly
+              setActiveFacingMode((prev) => (prev === 'user' ? 'environment' : 'user'));
+            }}
             className="mx-auto flex items-center justify-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-sm font-medium"
           >
             <RotateCcw className="h-4 w-4" />
-            Retry
+            Retry / Switch
           </button>
         </div>
       ) : (
         <>
+          {/* Flip Camera Button - Always visible */}
+          <div className="pointer-events-auto absolute right-6 top-6 z-10">
+            <button
+              onClick={() => setActiveFacingMode((prev) => (prev === 'user' ? 'environment' : 'user'))}
+              className="flex h-12 w-12 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm transition-transform active:scale-95"
+            >
+              <SwitchCamera className="h-6 w-6" />
+            </button>
+          </div>
+
           {!isStreaming && (
             <div className="absolute inset-0 flex items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-white" />
             </div>
           )}
-          <video
-            ref={videoRef}
-            className={`absolute h-full w-full object-cover ${facingMode === 'user' ? 'scale-x-[-1]' : ''} ${
+
+          <Webcam
+            ref={webcamRef}
+            audio={false}
+            className={`absolute h-full w-full object-cover ${activeFacingMode === 'user' ? 'scale-x-[-1]' : ''} ${
               !isStreaming ? 'invisible' : ''
             }`}
-            playsInline
-            autoPlay
-            muted
+            screenshotFormat="image/jpeg"
+            videoConstraints={getVideoConstraints()}
+            onUserMedia={handleUserMedia}
+            onUserMediaError={handleUserMediaError}
           />
-          <canvas ref={canvasRef} className="hidden" />
 
           {/* Overlays based on mask type */}
           {isStreaming && (
@@ -142,7 +130,7 @@ const Camera: React.FC<CameraProps> = ({ onCapture, maskType, instruction, facin
               </div>
 
               {/* Controls */}
-              <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center bg-gradient-to-t from-black/90 to-transparent p-8 pb-12">
+              <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center bg-gradient-to-t from-black/90 to-transparent p-8 pb-[calc(4rem+env(safe-area-inset-bottom))]">
                 <p className="mb-8 px-4 text-center text-lg font-medium text-white drop-shadow-md">{instruction}</p>
 
                 <div className="flex items-center gap-8">
