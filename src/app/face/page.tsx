@@ -47,10 +47,10 @@ const VerificationContent: React.FC = () => {
   const searchParams = useSearchParams();
   // Config State
   const [lang, setLang] = useState<Language>(() => {
-    return searchParams.get('lang') === 'es' ? 'es' : 'en';
+    return searchParams.get('lang') === 'en' ? 'en' : 'es';
   });
 
-  const [country, setCountry] = useState<string | null>(null);
+  const [country, setCountry] = useState<string | null>('VE');
   const [userId, setUserId] = useState<string | null>(null);
 
   // Flow State
@@ -74,7 +74,7 @@ const VerificationContent: React.FC = () => {
     const countryParam = searchParams.get('country');
     const userIdParam = searchParams.get('userId');
 
-    if (countryParam) setCountry(countryParam.toUpperCase());
+    setCountry(countryParam ? countryParam.toUpperCase() : 'VE');
     if (userIdParam) setUserId(userIdParam);
   }, [searchParams]);
 
