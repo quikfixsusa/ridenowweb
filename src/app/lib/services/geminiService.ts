@@ -6,7 +6,7 @@ import { ExtractedData, VerificationResult, DocumentType, LivenessGesture, Langu
 import type { StoredDocument } from './firebaseService';
 
 // Helper to clean base64 string
-const cleanBase64 = (b64: string) => b64.replace(/^data:image\/\w+;base64,/, '');
+const cleanBase64 = (b64: string) => b64.replace(/^data:[a-zA-Z0-9-+\/]+;base64,/, '');
 
 // Safe accessor for process.env that prevents ReferenceError
 const getApiKey = () => {
@@ -127,7 +127,7 @@ export const verifyIdentityAndLiveness = async (
   `;
 
   if (storedDoc) {
-    parts.push({ inlineData: { mimeType: storedDoc.mimeType, data: storedDoc.data } }); // Image 3: Stored Doc
+    parts.push({ inlineData: { mimeType: storedDoc.mimeType, data: cleanBase64(storedDoc.data) } }); // Image 3: Stored Doc
     prompt += `
     Image 3: The official ID document/file retrieved from our database records (it might be a PDF or Image).
     `;

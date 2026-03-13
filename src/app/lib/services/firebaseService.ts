@@ -25,6 +25,7 @@ export const getStoredLicense = async (userId: string): Promise<StoredDocument |
     const matchingItem = res.items.find((item) => {
       const name = item.name.toLowerCase();
       return (
+        name.includes('driver_licence') ||
         name.includes("driver's license") ||
         name.includes("driver's licence") ||
         name.includes('licencia de conducir') ||
