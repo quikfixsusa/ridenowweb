@@ -1,7 +1,8 @@
 import { doc, updateDoc } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
 import { ref, listAll, getDownloadURL } from 'firebase/storage';
 
-import { storage, db } from '../firebase';
+import { storage, db, functions } from '../firebase';
 
 export interface StoredDocument {
   data: string; // base64
@@ -79,6 +80,23 @@ export const updateUserVerificationStatus = async (userId: string): Promise<bool
     return true;
   } catch (error) {
     console.error('Error updating user verification status:', error);
+    return false;
+  }
+};
+
+/**
+ * Calls the verifyFaceVerificationToken Cloud Function to validate a token.
+ */
+export const verifyFaceVerificationToken = async (token: string): Promise<boolean> => {
+  if (!token) return false;
+
+  try {
+    const verifyFunction = httpsCallable(functions, 'verifyFaceVerificationToken');
+    const result = await verifyFunction({ token });
+    const responseData = result.data as { success: boolean };
+    return responseData.success;
+  } catch (error) {
+    console.error('Error calling verifyFaceVerificationToken:', error);
     return false;
   }
 };
