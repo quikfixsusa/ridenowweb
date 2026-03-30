@@ -18,7 +18,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 
 import Camera from '../components/Camera';
 import { StepIndicator } from '../components/StepIndicator';
-import { getStoredLicense, StoredDocument, updateUserVerificationStatus } from '../lib/services/firebaseService';
+import { getStoredLicense, StoredDocument, verifyFaceVerificationToken } from '../lib/services/firebaseService';
 import { extractDocumentData, verifyIdentityAndLiveness } from '../lib/services/geminiService';
 import { translations, getDocLabel } from '../lib/utils/i18n';
 import { VerificationStep, ExtractedData, VerificationResult, DocumentType, Language, LivenessGesture } from './types';
@@ -52,6 +52,7 @@ const VerificationContent: React.FC = () => {
 
   const [country, setCountry] = useState<string | null>('VE');
   const [userId, setUserId] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
   // Flow State
   const [step, setStep] = useState<VerificationStep>(VerificationStep.INTRO);
@@ -73,9 +74,11 @@ const VerificationContent: React.FC = () => {
   useEffect(() => {
     const countryParam = searchParams.get('country');
     const userIdParam = searchParams.get('userId');
+    const tokenParam = searchParams.get('token');
 
     setCountry(countryParam ? countryParam.toUpperCase() : 'VE');
     if (userIdParam) setUserId(userIdParam);
+    if (tokenParam) setToken(tokenParam);
   }, [searchParams]);
 
   const t = translations[lang];
@@ -175,22 +178,27 @@ const VerificationContent: React.FC = () => {
 
   const handleSuccessContinue = React.useCallback(async () => {
     // Success Logic called on button click or auto-timer
-    console.log('Verification Successful. Updating UserId:', userId);
+    console.log('Verification Successful. Validating Token...');
 
-    if (userId) {
+    if (token) {
       try {
-        await updateUserVerificationStatus(userId);
-        console.log('User status updated in Firestore');
+        const success = await verifyFaceVerificationToken(token);
+        if (success) {
+          console.log('User status updated via Cloud Function');
+        } else {
+          console.error('Cloud Function verification failed');
+          // Optional: handle failure (e.g., show error toast)
+        }
       } catch (updateErr) {
-        console.error('Failed to update user status:', updateErr);
+        console.error('Failed to call verifyFaceVerificationToken:', updateErr);
       }
     } else {
-      console.error('UserId is missing, cannot update status');
+      console.error('Verification token is missing, cannot update status via Cloud Function');
     }
 
     // Navigate immediately using window.location for reliability
     router.push('/face/success');
-  }, [userId, router]);
+  }, [token, router]);
 
   // Auto-navigate on success
   useEffect(() => {
